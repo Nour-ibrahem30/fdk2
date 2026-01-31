@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: philosopher-platform
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server-production.js
+    envVars:
+      - key: NODE_ENV
+        value: production
