@@ -5,135 +5,255 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
-    <title>ط§ظ„ط§ظ…طھط­ط§ظ†ط§طھ | ظ…ظ†طµط© ط§ظ„ظپظٹظ„ط³ظˆظپ ط§ظ„طھط¹ظ„ظٹظ…ظٹط©</title>
-    <meta name="description" content="ط§ط®طھط¨ط± ظ…ط¹ظ„ظˆظ…ط§طھظƒ ظ…ط¹ ط§ظ…طھط­ط§ظ†ط§طھ طھظپط§ط¹ظ„ظٹط© ظ…طھظ†ظˆط¹ط© ظˆطھظ‚ظٹظٹظ… ظپظˆط±ظٹ">
-    <meta name="keywords" content="ط§ظ…طھط­ط§ظ†ط§طھ, ط§ط®طھط¨ط§ط±ط§طھ, طھظ‚ظٹظٹظ…, ط§ظ„ظپظٹظ„ط³ظˆظپ">
+    <title>الامتحانات | منصة الفيلسوف التعليمية</title>
+    <meta name="description" content="اختبر معلوماتك مع امتحانات تفاعلية متنوعة وتقييم فوري">
+    <meta name="keywords" content="امتحانات, اختبارات, تقييم, الفيلسوف">
+    <meta name="author" content="الأستاذ محمد ناصر - الفيلسوف">
     
-    <link rel="canonical" href="https://philosopher-platform.com/exams.html">
     <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/pages_style/dashboard.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding-bottom: 240px;
+        }
+
+        .exams-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .exams-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-top: 100px;
+        }
+
+        .exams-header h1 {
+            font-size: 2.5rem;
+            color: #3b82f6;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .exams-header p {
+            font-size: 1.2rem;
+            color: #94a3b8;
+        }
+
+        .exam-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 0.75rem 1.5rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            color: #3b82f6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .exams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .exam-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .exam-card:hover {
+            transform: translateY(-5px);
+            border-color: #3b82f6;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .exam-type {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            color: #a78bfa;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .exam-title {
+            font-size: 1.5rem;
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+        }
+
+        .exam-info {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .exam-info span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .exam-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-start {
+            flex: 1;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #94a3b8;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #cbd5e1;
+        }
+    </style>
 </head>
 <body>
-    <a href="#main-content" class="sr-only">طھط®ط·ظ‰ ط¥ظ„ظ‰ ط§ظ„ظ…ط­طھظˆظ‰ ط§ظ„ط±ط¦ظٹط³ظٹ</a>
+    <a href="#main-content" class="sr-only">تخطى إلى المحتوى الرئيسي</a>
     
     <header class="header" role="banner" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
         <div class="container">
-            <nav class="navbar" role="navigation" aria-label="ط§ظ„ظ‚ط§ط¦ظ…ط© ط§ظ„ط±ط¦ظٹط³ظٹط©">
+            <nav class="navbar" role="navigation" aria-label="القائمة الرئيسية">
                 <div class="navbar-brand">
-                    <a href="/" class="logo" aria-label="ط§ظ„طµظپط­ط© ط§ظ„ط±ط¦ظٹط³ظٹط©">
-                        <span class="logo-icon" aria-hidden="true">ًںژ“</span>
-                        <span class="logo-text">ظ…ظ†طµط© ط§ظ„ظپظٹظ„ط³ظˆظپ</span>
+                    <a href="../../index.html" class="logo" aria-label="الصفحة الرئيسية">
+                        <span class="logo-icon" aria-hidden="true">🎓</span>
+                        <span class="logo-text">منصة الفيلسوف</span>
                     </a>
                 </div>
                 
+                <button class="navbar-toggle" aria-label="فتح القائمة" aria-expanded="false">
+                    <span class="navbar-toggle-icon"></span>
+                </button>
+                
                 <div class="navbar-menu">
                     <ul class="navbar-nav" role="list">
-                        <li><a href="/">ط§ظ„ط±ط¦ظٹط³ظٹط©</a></li>
-                        <li><a href="videos.html">ط§ظ„ظپظٹط¯ظٹظˆظ‡ط§طھ</a></li>
-                        <li><a href="exams.html" aria-current="page">ط§ظ„ط§ظ…طھط­ط§ظ†ط§طھ</a></li>
-                        <li><a href="notes.html">ط§ظ„ظ…ظ„ط§ط­ط¸ط§طھ</a></li>
+                        <li><a href="../../index.html">الرئيسية</a></li>
+                        <li><a href="dashboard.html">لوحة التحكم</a></li>
+                        <li><a href="videos.html">الفيديوهات</a></li>
+                        <li><a href="exams.html" aria-current="page">الامتحانات</a></li>
+                        <li><a href="notes.html">الملاحظات</a></li>
+                        <li><a href="profile.html">الملف الشخصي</a></li>
                     </ul>
-                    <a href="login.html" id="authBtn" class="btn btn-primary">طھط³ط¬ظٹظ„ ط§ظ„ط¯ط®ظˆظ„</a>
+                    <button id="logoutBtn" class="btn btn-secondary">تسجيل الخروج</button>
                 </div>
             </nav>
         </div>
     </header>
 
-    <main id="main-content" role="main" style="padding-top: 100px; min-height: calc(100vh - 200px);">
-        <section class="page-hero" style="padding: 3rem 0 2rem;">
-            <div class="container">
-                <h1 class="page-title">ط§ظ„ط§ظ…طھط­ط§ظ†ط§طھ</h1>
-                <p class="page-subtitle">ط§ط®طھط¨ط± ظ…ط¹ظ„ظˆظ…ط§طھظƒ ظˆطھط§ط¨ط¹ طھظ‚ط¯ظ…ظƒ</p>
+    <main id="main-content" role="main">
+        <div class="exams-container">
+            <div class="exams-header">
+                <h1>الامتحانات</h1>
+                <p>اختبر معلوماتك وتابع تقدمك</p>
             </div>
-        </section>
 
-        <section class="content-section">
-            <div class="container">
-                <div class="content-filters" style="display: flex; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap; align-items: center;">
-                    <div class="search-box" style="position: relative; flex: 1; min-width: 300px;">
-                        <input 
-                            type="search" 
-                            id="searchInput" 
-                            class="search-input" 
-                            placeholder="ط§ط¨ط­ط« ط¹ظ† ط§ظ…طھط­ط§ظ†..."
-                            aria-label="ط§ظ„ط¨ط­ط« ط¹ظ† ط§ظ…طھط­ط§ظ†"
-                            style="width: 100%; padding: 1rem 3.5rem 1rem 1.5rem; background: rgba(30, 41, 59, 0.8); border: 2px solid rgba(59, 130, 246, 0.3); border-radius: 12px; color: #f1f5f9; font-size: 1rem; transition: all 0.3s ease;"
-                            onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 4px rgba(59, 130, 246, 0.1)'"
-                            onblur="this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.boxShadow='none'"
-                        >
-                        <button class="search-btn" aria-label="ط¨ط­ط«" style="position: absolute; left: 0.5rem; top: 50%; transform: translateY(-50%); background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; border-radius: 8px; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-50%) scale(1.05)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">
-                            <span aria-hidden="true" style="font-size: 1.2rem;">ًں”چ</span>
-                        </button>
-                    </div>
+            <div class="exam-filters">
+                <button class="filter-btn active" data-filter="all">الكل</button>
+                <button class="filter-btn" data-filter="true-false">صح وخطأ</button>
+                <button class="filter-btn" data-filter="mcq">اختيار من متعدد</button>
+                <button class="filter-btn" data-filter="mixed">مزيج</button>
+            </div>
 
-                    <div class="filter-group" style="display: flex; align-items: center; gap: 0.5rem;">
-                        <label for="typeFilter" class="filter-label" style="color: #94a3b8; font-weight: 500; white-space: nowrap;">ط§ظ„ظ†ظˆط¹:</label>
-                        <select id="typeFilter" class="filter-select" style="padding: 1rem 1.5rem; background: rgba(30, 41, 59, 0.8); border: 2px solid rgba(59, 130, 246, 0.3); border-radius: 12px; color: #f1f5f9; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; min-width: 150px;" onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 4px rgba(59, 130, 246, 0.1)'" onblur="this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.boxShadow='none'">
-                            <option value="all">ط§ظ„ظƒظ„</option>
-                            <option value="true-false">طµط­ ظˆط®ط·ط£</option>
-                            <option value="multiple-choice">ط§ط®طھظٹط§ط± ظ…ظ† ظ…طھط¹ط¯ط¯</option>
-                            <option value="mixed">ظ…ط²ظٹط¬</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="examsGrid" class="exams-grid" role="list">
-                    <div class="loading" role="status" aria-live="polite">
-                        <div class="spinner" aria-hidden="true"></div>
-                        <span>ط¬ط§ط±ظٹ طھط­ظ…ظٹظ„ ط§ظ„ط§ظ…طھط­ط§ظ†ط§طھ...</span>
-                    </div>
-                </div>
-
-                <div id="emptyState" class="empty-state" style="display: none;">
-                    <span class="empty-icon" aria-hidden="true">ًں“‹</span>
-                    <h2>ظ„ط§ طھظˆط¬ط¯ ط§ظ…طھط­ط§ظ†ط§طھ ظ…طھط§ط­ط©</h2>
-                    <p>ط³ظٹطھظ… ط¥ط¶ط§ظپط© ط§ظ„ظ…ط­طھظˆظ‰ ظ‚ط±ظٹط¨ط§ظ‹</p>
+            <div class="exams-grid" id="examsGrid">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>لا توجد امتحانات متاحة</h3>
+                    <p>سيتم إضافة المحتوى قريباً</p>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
 
     <div class="waves" style="position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; z-index: 1; pointer-events: none;">
-        <div class="wave" style="position: absolute; bottom: 0; left: 0; width: 200%; height: 100%; background: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 1200 120&quot; preserveAspectRatio=&quot;none&quot;><path d=&quot;M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z&quot; fill=&quot;%231e293b&quot; fill-opacity=&quot;0.3&quot;/></svg>') repeat-x; animation: wave 25s linear infinite;"></div>
-        <div class="wave" style="position: absolute; bottom: 10px; left: 0; width: 200%; height: 100%; background: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 1200 120&quot; preserveAspectRatio=&quot;none&quot;><path d=&quot;M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z&quot; fill=&quot;%233b82f6&quot; fill-opacity=&quot;0.2&quot;/></svg>') repeat-x; animation: wave 35s linear infinite reverse;"></div>
-        <div class="wave" style="position: absolute; bottom: 20px; left: 0; width: 200%; height: 100%; background: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 1200 120&quot; preserveAspectRatio=&quot;none&quot;><path d=&quot;M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z&quot; fill=&quot;%238b5cf6&quot; fill-opacity=&quot;0.15&quot;/></svg>') repeat-x; animation: wave 45s linear infinite;"></div>
+        <div class="wave" style="position: absolute; bottom: 0; left: 0; width: 200%; height: 100%; background: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 1200 120&quot; preserveAspectRatio=&quot;none&quot;><path d=&quot;M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z&quot; fill=&quot;%231e293b&quot; fill-opacity=&quot;0.4&quot;/></svg>') repeat-x; animation: wave 25s linear infinite;"></div>
+        <div class="wave" style="position: absolute; bottom: 10px; left: 0; width: 200%; height: 100%; background: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 1200 120&quot; preserveAspectRatio=&quot;none&quot;><path d=&quot;M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z&quot; fill=&quot;%233b82f6&quot; fill-opacity=&quot;0.3&quot;/></svg>') repeat-x; animation: wave 35s linear infinite reverse;"></div>
+        <div class="wave" style="position: absolute; bottom: 20px; left: 0; width: 200%; height: 100%; background: url('data:image/svg+xml,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 1200 120&quot; preserveAspectRatio=&quot;none&quot;><path d=&quot;M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z&quot; fill=&quot;%238b5cf6&quot; fill-opacity=&quot;0.2&quot;/></svg>') repeat-x; animation: wave 45s linear infinite;"></div>
     </div>
 
-    <footer class="footer" role="contentinfo" style="position: relative; z-index: 10; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); border-top: 2px solid rgba(59, 130, 246, 0.3); padding: 3rem 0; margin-top: 4rem; height: 240px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    <footer class="footer" role="contentinfo" style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 10; background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); border-top: 2px solid rgba(59, 130, 246, 0.3); padding: 2.5rem 0; height: 240px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
         <div class="container" style="max-width: 900px;">
-            <!-- Platform Title -->
             <div style="text-align: center; margin-bottom: 2.5rem;">
-                <div style="display: inline-flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
-                    <span style="font-size: 2rem; filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));" aria-hidden="true">ًںژ“</span>
-                    <h3 style="color: #3b82f6; font-size: 1.5rem; font-weight: 700; margin: 0; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">ظ…ظ†طµط© ط§ظ„ظپظٹظ„ط³ظˆظپ ط§ظ„طھط¹ظ„ظٹظ…ظٹط©</h3>
+                <div style="display: inline-flex; align-items: center; gap: 1rem;">
+                    <span style="font-size: 1.75rem; filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));" aria-hidden="true">🎓</span>
+                    <h3 style="color: #3b82f6; font-size: 1.35rem; font-weight: 700; margin: 0; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">منصة الفيلسوف التعليمية</h3>
                 </div>
-                <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">
-                    ط±ط­ظ„طھظƒ ط§ظ„طھط¹ظ„ظٹظ…ظٹط© طھط¨ط¯ط£ ظ‡ظ†ط§ ظ…ط¹ ط§ظ„ط£ط³طھط§ط° ظ…ط­ظ…ط¯ ظ†ط§طµط±
-                </p>
             </div>
 
-            <!-- Social Icons -->
-            <div style="text-align: center; margin-bottom: 2.5rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <p style="color: #64748b; font-size: 0.85rem; margin: 0 0 1rem 0;">
+                    تم التطوير بواسطة <a href="https://www.linkedin.com/in/nour-ibrahem-499172346/" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; font-weight: 600; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#3b82f6'">Nour Ibrahem</a>
+                </p>
                 <div style="display: inline-flex; gap: 1rem; align-items: center;">
-                    <a href="https://www.linkedin.com/in/nour-ibrahem-499172346/" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: rgba(59, 130, 246, 0.15); border: 2px solid rgba(59, 130, 246, 0.3); border-radius: 50%; color: #3b82f6; text-decoration: none; transition: all 0.3s ease; backdrop-filter: blur(10px);" title="LinkedIn" onmouseover="this.style.background='rgba(59, 130, 246, 0.25)'; this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 10px 25px rgba(59, 130, 246, 0.4)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.15)'; this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none'">
-                        <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+                    <a href="https://www.linkedin.com/in/nour-ibrahem-499172346/" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(59, 130, 246, 0.15); border: 2px solid rgba(59, 130, 246, 0.3); border-radius: 50%; color: #3b82f6; text-decoration: none; transition: all 0.3s ease; backdrop-filter: blur(10px);" title="LinkedIn" onmouseover="this.style.background='rgba(59, 130, 246, 0.25)'; this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 10px 25px rgba(59, 130, 246, 0.4)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.15)'; this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none'">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                         </svg>
                     </a>
-                    <a href="mailto:nouribrahem207@gmail.com" style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: rgba(239, 68, 68, 0.15); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 50%; color: #ef4444; text-decoration: none; transition: all 0.3s ease; backdrop-filter: blur(10px);" title="Gmail" onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'; this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 10px 25px rgba(239, 68, 68, 0.4)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none'">
-                        <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+                    <a href="mailto:nouribrahem207@gmail.com" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(239, 68, 68, 0.15); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 50%; color: #ef4444; text-decoration: none; transition: all 0.3s ease; backdrop-filter: blur(10px);" title="Gmail" onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'; this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 10px 25px rgba(239, 68, 68, 0.4)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='none'">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 12.713l-11.985-9.713h23.97l-11.985 9.713zm0 2.574l-12-9.725v15.438h24v-15.438l-12 9.725z"/>
                         </svg>
                     </a>
                 </div>
             </div>
 
-            <!-- Developer Info & Copyright -->
-            <div style="text-align: center; padding-top: 2rem; border-top: 1px solid rgba(59, 130, 246, 0.2);">
-                <p style="color: #64748b; font-size: 0.875rem; margin: 0 0 0.5rem 0;">
-                    طھظ… ط§ظ„طھط·ظˆظٹط± ط¨ظˆط§ط³ط·ط© <span style="color: #3b82f6; font-weight: 600;">Nour Ibrahem</span>
-                </p>
-                <p style="color: #475569; font-size: 0.8rem; margin: 0;">
-                    آ© 2024 ظ…ظ†طµط© ط§ظ„ظپظٹظ„ط³ظˆظپ ط§ظ„طھط¹ظ„ظٹظ…ظٹط© - ط¬ظ…ظٹط¹ ط§ظ„ط­ظ‚ظˆظ‚ ظ…ط­ظپظˆط¸ط©
+            <div style="text-align: center; padding-top: 1.5rem; border-top: 1px solid rgba(59, 130, 246, 0.2);">
+                <p style="color: #475569; font-size: 0.75rem; margin: 0;">
+                    © 2024 منصة الفيلسوف التعليمية - جميع الحقوق محفوظة
                 </p>
             </div>
         </div>
@@ -146,129 +266,29 @@
         }
     </style>
 
-    <!-- Back to Top Button -->
-    <button id="backToTop" style="position: fixed; bottom: 2rem; right: 2rem; width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; border-radius: 50%; color: white; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4); z-index: 999; display: none; transition: all 0.3s ease;" title="ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ط£ط¹ظ„ظ‰" aria-label="ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ط£ط¹ظ„ظ‰">
-        â†‘
-    </button>
-
-    <div id="modalContainer"></div>
-
+    <script type="module" src="../assets/js/exams.js"></script>
+    <script src="../assets/js/motivational-toast.js"></script>
     <script>
-        // Back to Top Button
-        const backToTopBtn = document.getElementById('backToTop');
-        
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                backToTopBtn.style.display = 'block';
-            } else {
-                backToTopBtn.style.display = 'none';
-            }
-        });
-        
-        backToTopBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
+        // Exam Filters
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const examsGrid = document.getElementById('examsGrid');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const filter = btn.dataset.filter;
+                // Filter logic will be implemented when exams are loaded
+                console.log('Filter:', filter);
             });
         });
-        
-        backToTopBtn.addEventListener('mouseenter', () => {
-            backToTopBtn.style.transform = 'scale(1.1)';
-            backToTopBtn.style.boxShadow = '0 6px 30px rgba(59, 130, 246, 0.6)';
-        });
-        
-        backToTopBtn.addEventListener('mouseleave', () => {
-            backToTopBtn.style.transform = 'scale(1)';
-            backToTopBtn.style.boxShadow = '0 4px 20px rgba(59, 130, 246, 0.4)';
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
         });
     </script>
-
-    <style>
-        .exam-card {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            border-radius: 16px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .exam-card:hover {
-            transform: translateY(-4px);
-            border-color: #3b82f6;
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
-        }
-        
-        .exam-header {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
-            padding: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .exam-icon {
-            font-size: 2.5rem;
-        }
-        
-        .exam-badge {
-            background: rgba(59, 130, 246, 0.3);
-            color: #3b82f6;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        
-        .exam-content {
-            padding: 1.5rem;
-        }
-        
-        .exam-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #f1f5f9;
-            
-        }
-        
-        .exam-description {
-            color: #94a3b8;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-        }
-        
-        .exam-meta {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-            color: #64748b;
-        }
-        
-        .exam-file-info {
-            color: #64748b;
-            font-size: 0.875rem;
-            margin-bottom: 1rem;
-        }
-        
-        .btn-start {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        .exams-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-    </style>
-
-    <script src="../assets/js/exams-loader.js"></script>
-    <script src="../assets/js/motivational-toast.js"></script>
 </body>
 </html>
-
