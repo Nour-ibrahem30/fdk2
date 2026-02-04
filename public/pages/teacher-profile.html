@@ -6,6 +6,7 @@
     <title>الملف الشخصي للمدرس - منصة التعلم</title>
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/pages_style/profile.css">
+    <link rel="stylesheet" href="../assets/css/pages_style/students.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -187,108 +188,170 @@
         <p>⏳ جاري تحميل بياناتك...</p>
     </div>
 
+    <!-- Student Detail Modal -->
+    <div id="studentModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" onclick="document.getElementById('studentModal').classList.remove('open')"></div>
+      <div class="modal-dialog">
+        <button class="modal-close" onclick="document.getElementById('studentModal').classList.remove('open')">×</button>
+        <h3 id="modalStudentName">اسم الطالب</h3>
+        <div class="student-info">
+          <div><strong>البريد:</strong> <span id="modalStudentEmail"></span></div>
+          <div><strong>انضم:</strong> <span id="modalStudentJoined"></span></div>
+          <div id="modalStudentDetails"></div>
+        </div>
+      </div>
+    </div>
+
     <script src="../assets/dist/components-loader.js"></script>
-    <script>
-        // Teacher Profile JavaScript
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if user is teacher
-            
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getFirestore, collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
+        import { firebaseConfig } from '../assets/dist/firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.addEventListener('DOMContentLoaded', async function() {
             const userRole = localStorage.getItem('userRole');
             const currentUserEmail = localStorage.getItem('currentUserEmail');
-            
+
             if (userRole !== 'teacher' && currentUserEmail !== 'mohamednaser@gmail.com') {
-                showToast('هذه الصفحة مخصصة للمدرسين فقط', 'error');
-                setTimeout(() => {
-                    window.location.href = 'profile.html';
-                }, 2000);
+                alert('هذه الصفحة مخصصة للمدرسين فقط');
+                setTimeout(() => window.location.href = 'profile.html', 1200);
                 return;
             }
-            
-            loadTeacherProfile();
+
+            await loadTeacherProfile();
             initializeTeacherTabs();
         });
 
-        function loadTeacherProfile() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            const userEmail = localStorage.getItem('currentUserEmail') || '';
-            
-            // Update teacher info
-            document.getElementById('userName').textContent = currentUser.name || 'المدرس';
+        async function loadTeacherProfile() {
+            const stored = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            const email = localStorage.getItem('currentUserEmail') || (stored && stored.email) || '';
+            const uid = stored && stored.uid;
+
+            // Try fetch teacher doc from Firestore by uid or email
+            let teacherData = null;
+            try {
+                if (uid) {
+                    const docSnap = await getDoc(doc(db, 'users', uid));
+                    if (docSnap.exists()) teacherData = docSnap.data();
+                }
+                if (!teacherData && email) {
+                    const q = query(collection(db, 'users'), where('email', '==', email));
+                    const snaps = await getDocs(q);
+                    if (!snaps.empty) teacherData = snaps.docs[0].data();
+                }
+            } catch (e) {
+                console.error('Error fetching teacher data', e);
+            }
+
+            const name = (teacherData && teacherData.name) || (stored && stored.name) || 'المدرس';
+            const userEmail = (teacherData && teacherData.email) || email || 'teacher@example.com';
+
+            document.getElementById('userName').textContent = name;
             document.getElementById('userEmail').textContent = userEmail;
-            document.getElementById('userInitials').textContent = generateInitials(currentUser.name || 'المدرس');
-            
-            // Load stats
-            loadTeacherStats();
+            document.getElementById('userInitials').textContent = generateInitials(name);
+
+            // Load real stats and students
+            await loadTeacherStats(uid);
+            await loadStudentsList();
         }
 
-        function loadTeacherStats() {
-            // Simulate loading stats
-            document.getElementById('totalStudents').textContent = '25';
-            document.getElementById('totalContent').textContent = '48';
-            document.getElementById('totalExams').textContent = '12';
-            document.getElementById('videosCount').textContent = '15';
-            document.getElementById('examsCount').textContent = '12';
-            document.getElementById('notesCount').textContent = '8';
-            document.getElementById('materialsCount').textContent = '13';
+        async function loadTeacherStats(uid) {
+            try {
+                // Count content created by this teacher (lessons, exams, notes)
+                const lessonsQ = uid ? query(collection(db, 'lessons'), where('createdBy', '==', uid)) : query(collection(db, 'lessons'));
+                const examsQ = uid ? query(collection(db, 'exams'), where('createdBy', '==', uid)) : query(collection(db, 'exams'));
+                const notesQ = uid ? query(collection(db, 'notes'), where('createdBy', '==', uid)) : query(collection(db, 'notes'));
+
+                const [lessonsSnap, examsSnap, notesSnap] = await Promise.all([
+                    getDocs(lessonsQ),
+                    getDocs(examsQ),
+                    getDocs(notesQ)
+                ]);
+
+                document.getElementById('totalContent').textContent = (lessonsSnap.size + notesSnap.size + examsSnap.size).toString();
+                document.getElementById('totalExams').textContent = examsSnap.size.toString();
+                document.getElementById('videosCount').textContent = lessonsSnap.size.toString();
+                document.getElementById('examsCount').textContent = examsSnap.size.toString();
+                document.getElementById('notesCount').textContent = notesSnap.size.toString();
+            } catch (e) {
+                console.error('Error loading stats', e);
+            }
+        }
+
+        async function loadStudentsList() {
+            const container = document.getElementById('teacherStudents');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><span>جاري التحميل...</span></div>';
+            try {
+                const snaps = await getDocs(query(collection(db, 'users'), where('role', '==', 'student')));
+                container.innerHTML = '';
+                snaps.forEach(docSnap => {
+                    const s = docSnap.data();
+                    const card = document.createElement('div');
+                    card.className = 'student-card';
+                    card.setAttribute('data-uid', docSnap.id);
+                    card.innerHTML = `
+                        <div class="student-avatar">${generateInitials(s.name || s.email || 'طالب')}</div>
+                        <div class="student-body">
+                          <h4 class="student-name">${s.name || 'طالب'}</h4>
+                          <div class="student-email">${s.email || ''}</div>
+                        </div>
+                        <div class="student-meta">انضم: ${s.createdAt ? new Date(s.createdAt).toLocaleDateString('ar-EG') : '-'}</div>
+                    `;
+                    card.addEventListener('click', async () => openStudentModal(docSnap.id));
+                    container.appendChild(card);
+                });
+
+                document.getElementById('totalStudents').textContent = String(snaps.size || 0);
+            } catch (e) {
+                console.error('Error loading students', e);
+                container.innerHTML = '<div class="error-state"><p>حدث خطأ أثناء تحميل الطلاب</p></div>';
+            }
         }
 
         function initializeTeacherTabs() {
             const tabBtns = document.querySelectorAll('.tab-btn');
-            
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const tab = btn.getAttribute('data-tab');
-                    switchTeacherTab(tab);
-                });
-            });
+            tabBtns.forEach(btn => btn.addEventListener('click', (e) => { e.preventDefault(); switchTeacherTab(btn.getAttribute('data-tab')); }));
         }
 
         function switchTeacherTab(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-tab') === tabName) {
-                    btn.classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.toggle('active', content.id === tabName + 'Tab'));
+        }
+
+        function generateInitials(name) { return (name || '').split(' ').map(w => w.charAt(0)).join('').toUpperCase().slice(0,2); }
+
+        async function openStudentModal(uid) {
+            try {
+                const docSnap = await getDoc(doc(db, 'users', uid));
+                if (!docSnap.exists()) {
+                    alert('لم يتم العثور على بيانات الطالب');
+                    return;
                 }
-            });
-
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-                if (content.id === tabName + 'Tab') {
-                    content.classList.add('active');
-                }
-            });
-        }
-
-        function generateInitials(name) {
-            return name.split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2);
-        }
-
-        function showToast(message, type = 'info') {
-            // Toast implementation
-            console.log(`${type}: ${message}`);
-        }
-
-        // Quick action functions
-        function showQuickAddModal() {
-            showToast('سيتم توجيهك إلى لوحة التحكم لإضافة محتوى', 'info');
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1000);
-        }
-
-        function showStudentsModal() {
-            switchTeacherTab('students');
-        }
-
-        function showReportsModal() {
-            switchTeacherTab('overview');
-        }
-
-        function saveTeacherSettings() {
-            showToast('تم حفظ الإعدادات بنجاح!', 'success');
+                const s = docSnap.data();
+                const modal = document.getElementById('studentModal');
+                if (!modal) return;
+                (document.getElementById('modalStudentName')).textContent = s.name || s.email || 'طالب';
+                (document.getElementById('modalStudentEmail')).textContent = s.email || '';
+                (document.getElementById('modalStudentJoined')).textContent = s.createdAt ? new Date(s.createdAt).toLocaleString('ar-EG') : '-';
+                (document.getElementById('modalStudentDetails')).textContent = s.bio || s.note || 'لا توجد معلومات إضافية';
+                modal.classList.add('open');
+            } catch (e) {
+                console.error('openStudentModal error', e);
+            }
         }
     </script>
 
@@ -444,6 +507,15 @@
         .form-input::placeholder {
             color: #64748b;
         }
+
+        /* Student card styles */
+        .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+        .student-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(59,130,246,0.12); padding: 0.75rem; border-radius: 10px; display:flex; align-items:center; gap:0.75rem; }
+        .student-avatar { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#3b82f6,#8b5cf6); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; }
+        .student-body { flex:1; min-width:0; }
+        .student-name { margin:0; font-size:1rem; color:#f1f5f9; }
+        .student-email { color:#94a3b8; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .student-meta { font-size:0.8rem; color:#94a3b8; }
     </style>
 </body>
 </html>

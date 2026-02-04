@@ -13,6 +13,20 @@ const sections = document.querySelectorAll('.dashboard-section');
 const logoutBtn = document.getElementById('logoutBtn');
 const userName = document.getElementById('userName');
 async function checkAuth() {
+    const storedRole = localStorage.getItem('userRole');
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedRole === 'teacher' && storedUser) {
+        try {
+            const parsed = JSON.parse(storedUser);
+            currentUser = parsed;
+            if (userName)
+                userName.textContent = parsed.name;
+            return Promise.resolve(parsed);
+        }
+        catch (e) {
+            console.warn('Invalid stored currentUser, falling back to Firebase auth');
+        }
+    }
     return new Promise((resolve) => {
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -188,18 +202,54 @@ async function loadStudents() {
             const student = docSnap.data();
             const card = document.createElement('div');
             card.className = 'student-card';
+            card.setAttribute('data-uid', docSnap.id);
+            const studentName = student.name || student.email || 'طالب';
+            const initials = (studentName || '').split(' ').map(w => w.charAt(0)).join('').toUpperCase().slice(0, 2);
             card.innerHTML = `
-        <div class="student-avatar">👤</div>
-        <h3>${student.name}</h3>
-        <p>${student.email}</p>
-        <span class="student-date">انضم: ${new Date(student.createdAt).toLocaleDateString('ar-EG')}</span>
+        <div class="student-avatar">${initials}</div>
+        <div class="student-body">
+          <h4 class="student-name">${student.name || 'طالب'}</h4>
+          <div class="student-email">${student.email || ''}</div>
+        </div>
+        <div class="student-meta">انضم: ${student.createdAt ? new Date(student.createdAt).toLocaleDateString('ar-EG') : '-'}</div>
       `;
             container.appendChild(card);
+        });
+        container.addEventListener('click', async (ev) => {
+            const target = ev.target;
+            const card = target.closest('.student-card');
+            if (!card)
+                return;
+            const uid = card.getAttribute('data-uid');
+            if (!uid)
+                return;
+            openStudentModal(uid);
         });
     }
     catch (error) {
         console.error('Error loading students:', error);
         container.innerHTML = '<div class="error-state"><p>حدث خطأ</p></div>';
+    }
+}
+async function openStudentModal(uid) {
+    try {
+        const docSnap = await getDoc(doc(db, 'users', uid));
+        if (!docSnap.exists()) {
+            window.showToast && window.showToast('لم يتم العثور على بيانات الطالب', 'error');
+            return;
+        }
+        const s = docSnap.data();
+        const modal = document.getElementById('studentModal');
+        if (!modal)
+            return;
+        document.getElementById('modalStudentName').textContent = s.name || s.email || 'طالب';
+        document.getElementById('modalStudentEmail').textContent = s.email || '';
+        document.getElementById('modalStudentJoined').textContent = s.createdAt ? new Date(s.createdAt).toLocaleString('ar-EG') : '-';
+        document.getElementById('modalStudentDetails').textContent = s.bio || s.note || '';
+        modal.classList.add('open');
+    }
+    catch (e) {
+        console.error('openStudentModal error', e);
     }
 }
 function createManagementItem(item, type) {

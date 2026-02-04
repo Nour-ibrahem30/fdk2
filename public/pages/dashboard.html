@@ -11,6 +11,7 @@
     
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/pages_style/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/pages_style/students.css">
     <script type="importmap">
         {
             "imports": {
@@ -609,6 +610,20 @@
     </div>
 
     <div id="footer-placeholder"></div>
+
+    <!-- Student Detail Modal -->
+    <div id="studentModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" onclick="document.getElementById('studentModal').classList.remove('open')"></div>
+      <div class="modal-dialog">
+        <button class="modal-close" onclick="document.getElementById('studentModal').classList.remove('open')">×</button>
+        <h3 id="modalStudentName">اسم الطالب</h3>
+        <div class="student-info">
+          <div><strong>البريد:</strong> <span id="modalStudentEmail"></span></div>
+          <div><strong>انضم:</strong> <span id="modalStudentJoined"></span></div>
+          <div id="modalStudentDetails"></div>
+        </div>
+      </div>
+    </div>
 
     <script src="../assets/dist/components-loader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1517,13 +1532,39 @@
                     const student = docSnap.data();
                     const card = document.createElement('div');
                     card.className = 'student-card';
+                    card.setAttribute('data-uid', docSnap.id);
                     card.innerHTML = `
-                        <div class="student-avatar">👤</div>
-                        <h3>${student.name || 'طالب'}</h3>
-                        <p>${student.email || ''}</p>
-                        <span class="student-date">انضم: ${student.createdAt ? new Date(student.createdAt).toLocaleDateString('ar-EG') : '-'}</span>
+                        <div class="student-avatar">${(student.name||student.email||'طالب').split(' ').map(w=>w.charAt(0)).join('').toUpperCase().slice(0,2)}</div>
+                        <div class="student-body">
+                          <h4 class="student-name">${student.name || 'طالب'}</h4>
+                          <div class="student-email">${student.email || ''}</div>
+                        </div>
+                        <div class="student-meta">انضم: ${student.createdAt ? new Date(student.createdAt).toLocaleDateString('ar-EG') : '-'}</div>
                     `;
                     container.appendChild(card);
+                });
+
+                // delegation for student click -> open modal
+                container.addEventListener('click', async function(ev){
+                    const target = ev.target;
+                    const card = target.closest && target.closest('.student-card');
+                    if (!card) return;
+                    const uid = card.getAttribute('data-uid');
+                    if (!uid) return;
+
+                    try{
+                        const d = await getDocs(query(collection(db,'users'), where('__name__','==', uid)));
+                        let studentData = null;
+                        if (!d.empty) studentData = d.docs[0].data();
+                        // populate modal
+                        const modal = document.getElementById('studentModal');
+                        if (!modal) return;
+                        (document.getElementById('modalStudentName')).textContent = (studentData && studentData.name) || student.name || 'طالب';
+                        (document.getElementById('modalStudentEmail')).textContent = (studentData && studentData.email) || student.email || '';
+                        (document.getElementById('modalStudentJoined')).textContent = (studentData && studentData.createdAt) ? new Date(studentData.createdAt).toLocaleString('ar-EG') : (student.createdAt ? new Date(student.createdAt).toLocaleString('ar-EG') : '-');
+                        (document.getElementById('modalStudentDetails')).textContent = (studentData && (studentData.bio || studentData.note)) || '';
+                        modal.classList.add('open');
+                    }catch(err){console.error(err);}
                 });
             } catch (error) {
                 console.error('Error loading students:', error);
