@@ -18,61 +18,6 @@
     <link rel="canonical" href="https://philosopher-platform.com/">
     <link rel="stylesheet" href="public/assets/css/main.css">
     <link rel="stylesheet" href="public/assets/css/pages_style/home.css">
-    <style>
-        #three-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-        
-        .waves {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 200px;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .wave {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 200%;
-            height: 100%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" fill="%233b82f6" fill-opacity="0.05"/></svg>') repeat-x;
-            animation: wave 15s linear infinite;
-        }
-
-        .wave:nth-child(2) {
-            bottom: 10px;
-            opacity: 0.5;
-            animation: wave 20s linear infinite reverse;
-        }
-
-        .wave:nth-child(3) {
-            bottom: 20px;
-            opacity: 0.3;
-            animation: wave 25s linear infinite;
-        }
-
-        @keyframes wave {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        
-        .header,
-        main,
-        .footer {
-            position: relative;
-            z-index: 10;
-        }
-    </style>
 </head>
 <body>
     <canvas id="three-canvas"></canvas>
@@ -89,7 +34,7 @@
         <section class="hero" id="home" aria-labelledby="hero-title">
             <div class="container">
                 <div class="hero-content">
-                    <h1 id="hero-title" class="hero-title">منصة التعلم</h1>
+                    <h1 id="hero-title" class="hero-title"> منصة الفيلسوف..</h1>
                     <p class="hero-subtitle">رحلتك التعليمية تبدأ هنا</p>
                     <div class="hero-actions">
                         <a href="public/pages/login.html" class="btn btn-primary btn-lg">ابدأ التعلم الآن</a>

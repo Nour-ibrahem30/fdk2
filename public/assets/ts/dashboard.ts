@@ -396,11 +396,24 @@ function showAddVideoModal() {
 
 async function addVideo(title: string, videoUrl: string, notes: string) {
   try {
+    // Ensure currentUser is set
+    if (!currentUser) {
+      const stored = localStorage.getItem('currentUser');
+      if (stored) {
+        try { currentUser = JSON.parse(stored) as User; } catch(e) {}
+      }
+    }
+
+    if (!currentUser || !currentUser.uid) {
+      (window as any).showToast('خطأ: لم يتم تعيين المستخدم', 'error');
+      return;
+    }
+
     await addDoc(collection(db, 'lessons'), {
       title,
       videoUrl,
       notes,
-      createdBy: currentUser?.uid,
+      createdBy: currentUser.uid,
       createdAt: new Date().toISOString()
     });
 
@@ -426,12 +439,25 @@ function showAddExamModal() {
 
 async function addExam(title: string, duration: number) {
   try {
+    // Ensure currentUser is set
+    if (!currentUser) {
+      const stored = localStorage.getItem('currentUser');
+      if (stored) {
+        try { currentUser = JSON.parse(stored) as User; } catch(e) {}
+      }
+    }
+
+    if (!currentUser || !currentUser.uid) {
+      (window as any).showToast('خطأ: لم يتم تعيين المستخدم', 'error');
+      return;
+    }
+
     await addDoc(collection(db, 'exams'), {
       title,
       duration,
       questions: [],
       type: 'mixed',
-      createdBy: currentUser?.uid,
+      createdBy: currentUser.uid,
       createdAt: new Date().toISOString()
     });
 
@@ -455,10 +481,23 @@ function showAddNoteModal() {
 
 async function addNote(title: string, content: string) {
   try {
+    // Ensure currentUser is set
+    if (!currentUser) {
+      const stored = localStorage.getItem('currentUser');
+      if (stored) {
+        try { currentUser = JSON.parse(stored) as User; } catch(e) {}
+      }
+    }
+
+    if (!currentUser || !currentUser.uid) {
+      (window as any).showToast('خطأ: لم يتم تعيين المستخدم', 'error');
+      return;
+    }
+
     await addDoc(collection(db, 'notes'), {
       title,
       content,
-      createdBy: currentUser?.uid,
+      createdBy: currentUser.uid,
       createdAt: new Date().toISOString()
     });
 

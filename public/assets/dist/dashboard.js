@@ -355,11 +355,24 @@ function showAddVideoModal() {
 }
 async function addVideo(title, videoUrl, notes) {
     try {
+        if (!currentUser) {
+            const stored = localStorage.getItem('currentUser');
+            if (stored) {
+                try {
+                    currentUser = JSON.parse(stored);
+                }
+                catch (e) { }
+            }
+        }
+        if (!currentUser || !currentUser.uid) {
+            window.showToast('خطأ: لم يتم تعيين المستخدم', 'error');
+            return;
+        }
         await addDoc(collection(db, 'lessons'), {
             title,
             videoUrl,
             notes,
-            createdBy: currentUser?.uid,
+            createdBy: currentUser.uid,
             createdAt: new Date().toISOString()
         });
         window.showToast('تم إضافة الفيديو بنجاح!', 'success');
@@ -382,12 +395,25 @@ function showAddExamModal() {
 }
 async function addExam(title, duration) {
     try {
+        if (!currentUser) {
+            const stored = localStorage.getItem('currentUser');
+            if (stored) {
+                try {
+                    currentUser = JSON.parse(stored);
+                }
+                catch (e) { }
+            }
+        }
+        if (!currentUser || !currentUser.uid) {
+            window.showToast('خطأ: لم يتم تعيين المستخدم', 'error');
+            return;
+        }
         await addDoc(collection(db, 'exams'), {
             title,
             duration,
             questions: [],
             type: 'mixed',
-            createdBy: currentUser?.uid,
+            createdBy: currentUser.uid,
             createdAt: new Date().toISOString()
         });
         window.showToast('تم إضافة الامتحان بنجاح!', 'success');
@@ -409,10 +435,23 @@ function showAddNoteModal() {
 }
 async function addNote(title, content) {
     try {
+        if (!currentUser) {
+            const stored = localStorage.getItem('currentUser');
+            if (stored) {
+                try {
+                    currentUser = JSON.parse(stored);
+                }
+                catch (e) { }
+            }
+        }
+        if (!currentUser || !currentUser.uid) {
+            window.showToast('خطأ: لم يتم تعيين المستخدم', 'error');
+            return;
+        }
         await addDoc(collection(db, 'notes'), {
             title,
             content,
-            createdBy: currentUser?.uid,
+            createdBy: currentUser.uid,
             createdAt: new Date().toISOString()
         });
         window.showToast('تم إضافة الملاحظة بنجاح!', 'success');
