@@ -8,4 +8,3 @@ export const firebaseConfig = {
     measurementId: "G-4P972FP416",
     databaseURL: "https://a-platform-for-learning-default-rtdb.firebaseio.com"
 };
-//# sourceMappingURL=firebase-config.js.map

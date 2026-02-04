@@ -1,8 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy, getDoc, setDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, getDoc, setDoc } from 'firebase/firestore';
 import { firebaseConfig } from './firebase-config';
-import './toast-types';
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -244,10 +243,10 @@ async function checkAuth() {
                     const userData = userDoc.data();
                     if (userData.role === 'teacher') {
                         hideLoading();
-                        showToast('مرحباً أستاذ ' + (userData.name || 'محمد'), 'success');
+                        showToast('سيتم توجيهك إلى لوحة التحكم', 'info');
                         setTimeout(() => {
-                            window.location.href = '/public/pages/teacher-profile.html';
-                        }, 1500);
+                            window.location.href = '/public/pages/dashboard.html';
+                        }, 2000);
                         resolve(null);
                         return;
                     }
@@ -326,6 +325,39 @@ function updateProfileUI(displayName, userEmail) {
     setTimeout(doUpdate, 500);
     console.log('🎉 Profile UI update completed');
 }
+async function saveProfileData(profileData) {
+    if (!currentUser) {
+        console.error('❌ No current user');
+        showToast('لم يتم العثور على المستخدم', 'error');
+        return;
+    }
+    try {
+        showLoading();
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+            name: profileData.name || currentUser.name,
+            bio: profileData.bio || '',
+            phone: profileData.phone || '',
+            country: profileData.country || '',
+            updatedAt: new Date().toISOString()
+        });
+        currentUser = {
+            ...currentUser,
+            ...profileData,
+            updatedAt: new Date().toISOString()
+        };
+        showToast('تم حفظ البيانات بنجاح!', 'success');
+        if (currentUser) {
+            updateProfileUI(currentUser.name, currentUser.email);
+        }
+    }
+    catch (error) {
+        console.error('❌ Error saving profile:', error);
+        showToast('حدث خطأ أثناء حفظ البيانات', 'error');
+    }
+    finally {
+        hideLoading();
+    }
+}
 function extractNameFromEmail(email) {
     const namePart = email.split('@')[0];
     return namePart
@@ -342,11 +374,11 @@ async function loadProgress() {
             getDocs(collection(db, 'lessons')),
             getDocs(collection(db, 'exams')),
             getDocs(query(collection(db, 'progress'), where('studentId', '==', currentUser.uid))),
-            getDocs(query(collection(db, 'todos'), where('userId', '==', currentUser.uid), where('completed', '==', false)))
+            getDocs(query(collection(db, 'todos'), where('userId', '==', currentUser.uid)))
         ]);
         const totalVideos = videosSnap.size;
         const totalExams = examsSnap.size;
-        const activeTodos = todosSnap.size;
+        const activeTodos = todosSnap.docs.filter((d) => !d.data().completed).length;
         let completedVideos = 0;
         let completedExams = 0;
         progressSnap.forEach((doc) => {
@@ -390,7 +422,7 @@ async function loadTodos() {
     }
     console.log('Loading todos for user:', currentUser.uid);
     try {
-        const todosQuery = query(collection(db, 'todos'), where('userId', '==', currentUser.uid), orderBy('createdAt', 'desc'));
+        const todosQuery = query(collection(db, 'todos'), where('userId', '==', currentUser.uid));
         const snapshot = await getDocs(todosQuery);
         console.log('Todos snapshot size:', snapshot.size);
         if (snapshot.empty) {
@@ -402,6 +434,11 @@ async function loadTodos() {
         const todos = [];
         snapshot.forEach((docSnap) => {
             todos.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        todos.sort((a, b) => {
+            const aTime = new Date(a.createdAt).getTime();
+            const bTime = new Date(b.createdAt).getTime();
+            return bTime - aTime;
         });
         console.log('Loaded todos:', todos.length);
         const filteredTodos = todos.filter(shouldShowTodo);
@@ -688,7 +725,7 @@ async function loadExamResults() {
         return;
     console.log('Loading exam results...');
     try {
-        const resultsQuery = query(collection(db, 'examResults'), where('studentId', '==', currentUser.uid), orderBy('completedAt', 'desc'));
+        const resultsQuery = query(collection(db, 'examResults'), where('studentId', '==', currentUser.uid));
         const snapshot = await getDocs(resultsQuery);
         const container = document.getElementById('examResults');
         if (snapshot.empty) {
@@ -697,9 +734,13 @@ async function loadExamResults() {
             showSampleExamResults(container);
             return;
         }
-        container.innerHTML = '';
+        const results = [];
         snapshot.forEach((docSnap) => {
-            const result = docSnap.data();
+            results.push(docSnap.data());
+        });
+        results.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+        container.innerHTML = '';
+        results.forEach((result) => {
             const percentage = Math.round((result.score / result.totalQuestions) * 100);
             const passed = percentage >= 50;
             const item = document.createElement('div');
@@ -821,11 +862,11 @@ async function loadAchievements() {
             getDocs(collection(db, 'lessons')),
             getDocs(collection(db, 'exams')),
             getDocs(query(collection(db, 'progress'), where('studentId', '==', currentUser.uid))),
-            getDocs(query(collection(db, 'todos'), where('userId', '==', currentUser.uid), where('completed', '==', true)))
+            getDocs(query(collection(db, 'todos'), where('userId', '==', currentUser.uid)))
         ]);
         const totalVideos = videosSnap.size;
         const totalExams = examsSnap.size;
-        const completedTodos = todosSnap.size;
+        const completedTodos = todosSnap.docs.filter((d) => d.data().completed).length;
         let completedVideos = 0;
         let completedExams = 0;
         progressSnap.forEach((doc) => {
@@ -999,6 +1040,29 @@ function initializeEventListeners() {
         else {
             console.warn('Add todo button not found!');
         }
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        if (saveProfileBtn) {
+            console.log('Adding save profile button listener');
+            saveProfileBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const nameInput = document.getElementById('editName');
+                const bioInput = document.getElementById('editBio');
+                const phoneInput = document.getElementById('editPhone');
+                const countryInput = document.getElementById('editCountry');
+                if (!nameInput?.value.trim()) {
+                    showToast('يرجى إدخال الاسم', 'warning');
+                    return;
+                }
+                const profileData = {
+                    name: nameInput.value.trim(),
+                    bio: bioInput?.value.trim() || '',
+                    phone: phoneInput?.value.trim() || '',
+                    country: countryInput?.value.trim() || ''
+                };
+                await saveProfileData(profileData);
+            });
+        }
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             console.log('Adding logout button listener');
@@ -1110,4 +1174,3 @@ document.addEventListener('DOMContentLoaded', async () => {
 window.addEventListener('beforeunload', () => {
     stopMotivationalMessages();
 });
-//# sourceMappingURL=profile.js.map

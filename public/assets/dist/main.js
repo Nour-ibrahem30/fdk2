@@ -170,4 +170,3 @@ document.addEventListener('DOMContentLoaded', () => {
     initAnimations();
     loadTestimonials();
 });
-//# sourceMappingURL=main.js.map

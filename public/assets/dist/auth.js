@@ -126,4 +126,3 @@ onAuthStateChanged(auth, async (user) => {
         }
     }
 });
-//# sourceMappingURL=auth.js.map

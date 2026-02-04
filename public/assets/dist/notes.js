@@ -99,4 +99,3 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 document.addEventListener('DOMContentLoaded', loadNotes);
-//# sourceMappingURL=notes.js.map

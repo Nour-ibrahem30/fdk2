@@ -158,4 +158,3 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 document.addEventListener('DOMContentLoaded', loadVideos);
-//# sourceMappingURL=videos.js.map

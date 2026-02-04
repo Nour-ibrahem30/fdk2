@@ -86,6 +86,8 @@ uploads/attachments/*
 # Build directories
 client/build/
 dist/
+!public/assets/dist/
+!public/assets/dist/**
 
 # OS generated files
 .DS_Store

@@ -287,4 +287,3 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 document.addEventListener('DOMContentLoaded', loadExams);
-//# sourceMappingURL=exams.js.map

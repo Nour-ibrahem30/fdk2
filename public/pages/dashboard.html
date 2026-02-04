@@ -11,6 +11,15 @@
     
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/pages_style/dashboard.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+            }
+        }
+    </script>
     <style>
         #three-canvas {
             position: fixed;
@@ -601,7 +610,7 @@
 
     <div id="footer-placeholder"></div>
 
-    <script src="../assets/js/components-loader.js"></script>
+    <script src="../assets/dist/components-loader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         // 🔐 Authenticationop
@@ -891,9 +900,9 @@
             }
 
             // Modal Functions
-            function createModt, onSubmit) {
+            function createModal(title, content, onSubmit) {
                 console.log('🔄 Creating modal:', title);
-                
+
                 const modal = document.createElement('div');
                 modal.className = 'modal-overlay active';
                 modal.innerHTML = `
@@ -911,34 +920,33 @@
                         </div>
                     </div>
                 `;
-                
+
                 document.body.appendChild(modal);
-                
+
                 const closeBtn = modal.querySelector('.modal-close');
                 const cancelBtn = modal.querySelector('.modal-cancel');
                 const submitBtn = modal.querySelector('.modal-submit');
-                
+
                 function closeModal() {
                     console.log('🔄 Closing modal');
                     modal.classList.remove('active');
                     setTimeout(() => modal.remove(), 300);
                 }
-                
+
                 closeBtn.addEventListener('click', closeModal);
                 cancelBtn.addEventListener('click', closeModal);
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) closeModal();
                 });
-                
+
                 submitBtn.addEventListener('click', () => {
                     console.log('Modal submit clicked');
                     submitBtn.disabled = true;
                     submitBtn.textContent = 'جاري الحفظ...';
-                    
+
                     try {
                         const result = onSubmit(closeModal);
-                        
-                        // If result is a promise, wait for it
+
                         if (result && typeof result.then === 'function') {
                             result.then((success) => {
                                 if (success !== false) {
@@ -955,7 +963,7 @@
                             closeModal();
                         } else {
                             submitBtn.disabled = false;
-                t = 'حفظ';
+                            submitBtn.textContent = 'حفظ';
                         }
                     } catch (error) {
                         console.error('Error in modal submit:', error);
@@ -964,7 +972,7 @@
                         submitBtn.textContent = 'حفظ';
                     }
                 });
-                
+
                 return modal;
             }
 
@@ -1477,6 +1485,53 @@
             
             console.log('Dashboard initialization complete!');
         });
+    </script>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+        import { firebaseConfig } from '../assets/dist/firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadAllStudents() {
+            const container = document.getElementById('studentsList');
+            if (!container) return;
+
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><span>جاري تحميل الطلاب...</span></div>';
+
+            try {
+                const snapshot = await getDocs(query(collection(db, 'users'), where('role', '==', 'student')));
+
+                const totalStudentsEl = document.getElementById('totalStudents');
+                if (totalStudentsEl) totalStudentsEl.textContent = snapshot.size.toString();
+
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state"><p>لا يوجد طلاب</p></div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                snapshot.forEach((docSnap) => {
+                    const student = docSnap.data();
+                    const card = document.createElement('div');
+                    card.className = 'student-card';
+                    card.innerHTML = `
+                        <div class="student-avatar">👤</div>
+                        <h3>${student.name || 'طالب'}</h3>
+                        <p>${student.email || ''}</p>
+                        <span class="student-date">انضم: ${student.createdAt ? new Date(student.createdAt).toLocaleDateString('ar-EG') : '-'}</span>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading students:', error);
+                container.innerHTML = '<div class="error-state"><p>حدث خطأ</p></div>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAllStudents);
     </script>
 </body>
 </html>

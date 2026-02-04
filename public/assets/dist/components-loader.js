@@ -7,11 +7,16 @@
 
     function getBasePaths() {
         var pathname = window.location.pathname || '';
-        var isInPages = pathname.indexOf('/pages/') !== -1;
+        var pagesIndex = pathname.indexOf('/pages/');
+        var prefix = pagesIndex !== -1 ? pathname.slice(0, pagesIndex + 1) : '/public/';
+        var pagesBase = prefix + 'pages/';
+        var assetsBase = prefix + 'assets/';
+        var componentsBase = prefix + 'components/';
         return {
-            base: isInPages ? '' : 'public/pages/',
-            home: isInPages ? '../../index.html' : 'index.html',
-            componentsBase: isInPages ? '../components/' : 'public/components/'
+            base: pagesBase,
+            home: pagesBase + 'index.html',
+            assetsBase: assetsBase,
+            componentsBase: componentsBase
         };
     }
 
@@ -20,7 +25,10 @@
         if (!placeholder) return Promise.resolve();
 
         return fetch(url)
-            .then(function(res) { return res.text(); })
+            .then(function(res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + url);
+                return res.text();
+            })
             .then(function(html) {
                 var out = html;
                 Object.keys(replaceVars).forEach(function(key) {
@@ -119,7 +127,11 @@
         document.querySelectorAll('a[data-page="profile"], a[href*="profile.html"]').forEach(function(link) {
             if (link.getAttribute('data-page') === 'profile' || (link.getAttribute('href') || '').indexOf('profile.html') !== -1) {
                 link.addEventListener('click', function(e) {
-                    var hasSession = localStorage.getItem('currentUserEmail') || localStorage.getItem('currentUser');
+                    var currentEmail = localStorage.getItem('currentUserEmail');
+                    var userRole = localStorage.getItem('userRole');
+                    var hasSession = currentEmail || localStorage.getItem('currentUser');
+
+                    // Not logged in -> force login
                     if (!hasSession) {
                         e.preventDefault();
                         if (window.showToast) {
@@ -129,10 +141,24 @@
                                 window.location.href = base + 'login.html';
                             }, 2000);
                         } else {
-                            // Direct redirect if toast not available
                             var base = getBasePaths().base;
                             window.location.href = base + 'login.html';
                         }
+                        return;
+                    }
+
+                    // Decide destination: teacher -> teacher-profile.html, else profile.html
+                    var isTeacher = false;
+                    if (userRole === 'teacher') isTeacher = true;
+                    // Fallback: check known teacher emails (legacy special-cases)
+                    var teacherEmails = ['mohamednaser@gmail.com'];
+                    if (!isTeacher && currentEmail && teacherEmails.indexOf(currentEmail) !== -1) isTeacher = true;
+
+                    if (isTeacher) {
+                        e.preventDefault();
+                        var base = getBasePaths().base;
+                        window.location.href = base + 'teacher-profile.html';
+                        return;
                     }
                 });
             }
@@ -260,7 +286,7 @@
 
         // Load toast system first
         var toastScript = document.createElement('script');
-        toastScript.src = (paths.base ? '../' : 'public/') + 'assets/js/toast-system.js';
+        toastScript.src = paths.assetsBase + 'dist/toast-system.js';
         document.head.appendChild(toastScript);
 
         Promise.all([

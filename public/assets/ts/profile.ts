@@ -1,9 +1,8 @@
 // Enhanced Profile TypeScript with Complete Backend Integration
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, orderBy, getDoc, setDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, getDoc, setDoc } from 'firebase/firestore';
 import { firebaseConfig, User, TodoItem, Progress, ExamResult } from './firebase-config';
-import './toast-types';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -395,6 +394,46 @@ function updateProfileUI(displayName: string, userEmail: string) {
   console.log('🎉 Profile UI update completed');
 }
 
+// Save profile data to Firebase
+async function saveProfileData(profileData: any) {
+  if (!currentUser) {
+    console.error('❌ No current user');
+    showToast('لم يتم العثور على المستخدم', 'error');
+    return;
+  }
+
+  try {
+    showLoading();
+    
+    // Update user document in Firebase
+    await updateDoc(doc(db, 'users', currentUser.uid), {
+      name: profileData.name || currentUser.name,
+      bio: profileData.bio || '',
+      phone: profileData.phone || '',
+      country: profileData.country || '',
+      updatedAt: new Date().toISOString()
+    });
+
+    // Update local currentUser object
+    currentUser = {
+      ...currentUser,
+      ...profileData,
+      updatedAt: new Date().toISOString()
+    };
+
+    showToast('تم حفظ البيانات بنجاح!', 'success');
+    if (currentUser) {
+      updateProfileUI(currentUser.name, currentUser.email);
+    }
+    
+  } catch (error) {
+    console.error('❌ Error saving profile:', error);
+    showToast('حدث خطأ أثناء حفظ البيانات', 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
 function extractNameFromEmail(email: string): string {
   // Extract name from email (before @)
   const namePart = email.split('@')[0];
@@ -405,6 +444,7 @@ function extractNameFromEmail(email: string): string {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }
+
 async function loadProgress() {
   if (!currentUser) return;
 
@@ -413,12 +453,12 @@ async function loadProgress() {
       getDocs(collection(db, 'lessons')),
       getDocs(collection(db, 'exams')),
       getDocs(query(collection(db, 'progress'), where('studentId', '==', currentUser.uid))),
-      getDocs(query(collection(db, 'todos'), where('userId', '==', currentUser.uid), where('completed', '==', false)))
+      getDocs(query(collection(db, 'todos'), where('userId', '==', currentUser.uid)))
     ]);
 
     const totalVideos = videosSnap.size;
     const totalExams = examsSnap.size;
-    const activeTodos = todosSnap.size;
+    const activeTodos = todosSnap.docs.filter((d) => !(d.data() as TodoItem).completed).length;
 
     let completedVideos = 0;
     let completedExams = 0;
@@ -475,11 +515,7 @@ async function loadTodos() {
   console.log('Loading todos for user:', currentUser.uid);
 
   try {
-    const todosQuery = query(
-      collection(db, 'todos'),
-      where('userId', '==', currentUser.uid),
-      orderBy('createdAt', 'desc')
-    );
+    const todosQuery = query(collection(db, 'todos'), where('userId', '==', currentUser.uid));
     const snapshot = await getDocs(todosQuery);
 
     console.log('Todos snapshot size:', snapshot.size);
@@ -496,6 +532,12 @@ async function loadTodos() {
     const todos: (TodoItem & { id: string })[] = [];
     snapshot.forEach((docSnap) => {
       todos.push({ id: docSnap.id, ...docSnap.data() } as TodoItem & { id: string });
+    });
+
+    todos.sort((a, b) => {
+      const aTime = new Date(a.createdAt).getTime();
+      const bTime = new Date(b.createdAt).getTime();
+      return bTime - aTime;
     });
 
     console.log('Loaded todos:', todos.length);
@@ -663,6 +705,7 @@ async function handleDeleteTodo(id: string) {
     }
   );
 }
+
 function showAddTodoModal() {
   console.log('🔄 Opening Add Todo Modal...');
   
@@ -822,11 +865,7 @@ async function loadExamResults() {
   console.log('Loading exam results...');
 
   try {
-    const resultsQuery = query(
-      collection(db, 'examResults'),
-      where('studentId', '==', currentUser.uid),
-      orderBy('completedAt', 'desc')
-    );
+    const resultsQuery = query(collection(db, 'examResults'), where('studentId', '==', currentUser.uid));
     const snapshot = await getDocs(resultsQuery);
 
     const container = document.getElementById('examResults')!;
@@ -840,9 +879,15 @@ async function loadExamResults() {
       return;
     }
 
-    container.innerHTML = '';
+    const results: ExamResult[] = [];
     snapshot.forEach((docSnap) => {
-      const result = docSnap.data() as ExamResult;
+      results.push(docSnap.data() as ExamResult);
+    });
+
+    results.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+
+    container.innerHTML = '';
+    results.forEach((result) => {
       const percentage = Math.round((result.score / result.totalQuestions) * 100);
       const passed = percentage >= 50;
 
@@ -966,23 +1011,24 @@ function showSampleExamResults(container: HTMLElement) {
     container.appendChild(item);
   });
 }
+
 async function loadAchievements() {
   if (!currentUser) return;
 
   const container = document.getElementById('achievementsList')!;
-  
+
   try {
     // Get user progress data
     const [videosSnap, examsSnap, progressSnap, todosSnap] = await Promise.all([
       getDocs(collection(db, 'lessons')),
       getDocs(collection(db, 'exams')),
       getDocs(query(collection(db, 'progress'), where('studentId', '==', currentUser.uid))),
-      getDocs(query(collection(db, 'todos'), where('userId', '==', currentUser.uid), where('completed', '==', true)))
+      getDocs(query(collection(db, 'todos'), where('userId', '==', currentUser.uid)))
     ]);
 
     const totalVideos = videosSnap.size;
     const totalExams = examsSnap.size;
-    const completedTodos = todosSnap.size;
+    const completedTodos = todosSnap.docs.filter((d) => (d.data() as TodoItem).completed).length;
 
     let completedVideos = 0;
     let completedExams = 0;
@@ -1187,6 +1233,35 @@ function initializeEventListeners() {
       });
     } else {
       console.warn('Add todo button not found!');
+    }
+
+    // Save profile button
+    const saveProfileBtn = document.getElementById('saveProfileBtn');
+    if (saveProfileBtn) {
+      console.log('Adding save profile button listener');
+      saveProfileBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const nameInput = document.getElementById('editName') as HTMLInputElement;
+        const bioInput = document.getElementById('editBio') as HTMLTextAreaElement;
+        const phoneInput = document.getElementById('editPhone') as HTMLInputElement;
+        const countryInput = document.getElementById('editCountry') as HTMLInputElement;
+        
+        if (!nameInput?.value.trim()) {
+          showToast('يرجى إدخال الاسم', 'warning');
+          return;
+        }
+
+        const profileData = {
+          name: nameInput.value.trim(),
+          bio: bioInput?.value.trim() || '',
+          phone: phoneInput?.value.trim() || '',
+          country: countryInput?.value.trim() || ''
+        };
+
+        await saveProfileData(profileData);
+      });
     }
 
     // Logout button

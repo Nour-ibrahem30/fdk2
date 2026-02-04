@@ -23,4 +23,3 @@ export const seoConfig = {
     ogImage: "/assets/images/og-image.jpg",
     twitterHandle: "@philosopher_edu"
 };
-//# sourceMappingURL=config.js.map

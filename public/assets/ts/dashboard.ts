@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getFirestore, collection, getDocs, deleteDoc, doc, query, where, orderBy, getDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, deleteDoc, doc, query, where, orderBy, getDoc, addDoc } from 'firebase/firestore';
 import { firebaseConfig, User, Lesson, Exam, Note, Testimonial } from './firebase-config';
 import './toast-types';
 
@@ -308,5 +308,114 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkAuth();
   if (currentUser) {
     loadOverview();
+    setupEventListeners();
   }
 });
+
+async function setupEventListeners() {
+  // Add Video Button
+  const addVideoBtn = document.getElementById('addVideoBtn') as HTMLButtonElement;
+  if (addVideoBtn) {
+    addVideoBtn.addEventListener('click', () => showAddVideoModal());
+  }
+
+  // Add Exam Button
+  const addExamBtn = document.getElementById('addExamBtn') as HTMLButtonElement;
+  if (addExamBtn) {
+    addExamBtn.addEventListener('click', () => showAddExamModal());
+  }
+
+  // Add Note Button
+  const addNoteBtn = document.getElementById('addNoteBtn') as HTMLButtonElement;
+  if (addNoteBtn) {
+    addNoteBtn.addEventListener('click', () => showAddNoteModal());
+  }
+}
+
+function showAddVideoModal() {
+  const title = prompt('عنوان الفيديو:');
+  if (!title) return;
+
+  const videoUrl = prompt('رابط الفيديو (YouTube):');
+  if (!videoUrl) return;
+
+  const notes = prompt('ملاحظات (اختياري):') || '';
+
+  addVideo(title, videoUrl, notes);
+}
+
+async function addVideo(title: string, videoUrl: string, notes: string) {
+  try {
+    await addDoc(collection(db, 'lessons'), {
+      title,
+      videoUrl,
+      notes,
+      createdBy: currentUser?.uid,
+      createdAt: new Date().toISOString()
+    });
+
+    (window as any).showToast('تم إضافة الفيديو بنجاح!', 'success');
+    loadVideosManagement();
+  } catch (error) {
+    console.error('Error adding video:', error);
+    (window as any).showToast('حدث خطأ أثناء إضافة الفيديو', 'error');
+  }
+}
+
+function showAddExamModal() {
+  const title = prompt('عنوان الامتحان:');
+  if (!title) return;
+
+  const durationStr = prompt('مدة الامتحان (بالدقائق):');
+  if (!durationStr) return;
+
+  const duration = parseInt(durationStr);
+
+  addExam(title, duration);
+}
+
+async function addExam(title: string, duration: number) {
+  try {
+    await addDoc(collection(db, 'exams'), {
+      title,
+      duration,
+      questions: [],
+      type: 'mixed',
+      createdBy: currentUser?.uid,
+      createdAt: new Date().toISOString()
+    });
+
+    (window as any).showToast('تم إضافة الامتحان بنجاح!', 'success');
+    loadExamsManagement();
+  } catch (error) {
+    console.error('Error adding exam:', error);
+    (window as any).showToast('حدث خطأ أثناء إضافة الامتحان', 'error');
+  }
+}
+
+function showAddNoteModal() {
+  const title = prompt('عنوان الملاحظة:');
+  if (!title) return;
+
+  const content = prompt('محتوى الملاحظة:');
+  if (!content) return;
+
+  addNote(title, content);
+}
+
+async function addNote(title: string, content: string) {
+  try {
+    await addDoc(collection(db, 'notes'), {
+      title,
+      content,
+      createdBy: currentUser?.uid,
+      createdAt: new Date().toISOString()
+    });
+
+    (window as any).showToast('تم إضافة الملاحظة بنجاح!', 'success');
+    loadNotesManagement();
+  } catch (error) {
+    console.error('Error adding note:', error);
+    (window as any).showToast('حدث خطأ أثناء إضافة الملاحظة', 'error');
+  }
+}

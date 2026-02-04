@@ -123,4 +123,3 @@ if (typeof document !== 'undefined') {
         initPageAnimations();
     });
 }
-//# sourceMappingURL=animations.js.map
