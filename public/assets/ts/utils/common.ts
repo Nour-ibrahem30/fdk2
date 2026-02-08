@@ -20,7 +20,7 @@ export function delay(ms: number): Promise<void> {
  * @param {number} wait - Wait time in milliseconds
  * @returns {(...args: any[]) => void} Debounced function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends(...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -42,7 +42,7 @@ export function debounce<T extends (...args: any[]) => any>(
  * @param {number} limit - Limit time in milliseconds
  * @returns {(...args: any[]) => void} Throttled function
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends(...args: any[]) => any>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -96,13 +96,17 @@ export function deepClone<T>(obj: T): T {
  * @returns {T} Merged object
  */
 export function merge<T extends Record<string, any>>(target: T, ...sources: any[]): T {
-  if (!sources.length) return target;
+  if (!sources.length) {
+    return target;
+  }
   const source = sources.shift();
 
   if (isObject(target) && isObject(source)) {
     for (const key in source) {
       if (isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
+        if (!target[key]) {
+          Object.assign(target, { [key]: {} });
+        }
         merge(target[key], source[key]);
       } else {
         Object.assign(target, { [key]: source[key] });
@@ -152,7 +156,9 @@ export function formatDate(date: Date | string | number, format: string = 'YYYY-
  * @returns {string} Formatted size
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) {
+    return '0 Bytes';
+  }
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -225,8 +231,12 @@ export function isOnline(): boolean {
  */
 export function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
   const width = window.innerWidth;
-  if (width < 768) return 'mobile';
-  if (width < 1024) return 'tablet';
+  if (width < 768) {
+    return 'mobile';
+  }
+  if (width < 1024) {
+    return 'tablet';
+  }
   return 'desktop';
 }
 
@@ -246,7 +256,9 @@ export async function retry<T>(
     try {
       return await fn();
     } catch (error) {
-      if (i === maxAttempts - 1) throw error;
+      if (i === maxAttempts - 1) {
+        throw error;
+      }
       await delay(delayMs);
     }
   }

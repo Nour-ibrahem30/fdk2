@@ -263,21 +263,138 @@
     </style>
 
     <script src="../assets/js/components-loader.js"></script>
-    <script src="../assets/dist/notes.js" type="module"></script>
-    <script>
-        // Search and Filter
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAU0CCiQNrPEYpTNU4rAwmOmPUZnjb2FoU",
+            authDomain: "a-platform-for-learning.firebaseapp.com",
+            projectId: "a-platform-for-learning",
+            storageBucket: "a-platform-for-learning.firebasestorage.app",
+            messagingSenderId: "764579707883",
+            appId: "1:764579707883:web:5456e2348354cc58fab7ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let allNotes = [];
+        const notesGrid = document.getElementById('notesGrid');
         const searchInput = document.getElementById('searchInput');
         const priorityFilter = document.getElementById('priorityFilter');
-        const notesGrid = document.getElementById('notesGrid');
 
-        searchInput.addEventListener('input', filterNotes);
-        priorityFilter.addEventListener('change', filterNotes);
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                notesGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                        <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">🔒</span>
+                        <h3 style="color: #f87171; margin-bottom: 1rem;">يجب تسجيل الدخول</h3>
+                        <p style="color: #94a3b8; margin-bottom: 1.5rem;">يجب تسجيل الدخول لمشاهدة الملاحظات</p>
+                        <a href="login.html" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; text-decoration: none; border-radius: 12px;">تسجيل الدخول</a>
+                    </div>
+                `;
+                return;
+            }
+
+            await loadNotes();
+        });
+
+        async function loadNotes() {
+            try {
+                notesGrid.innerHTML = '<div style="text-align: center; padding: 2rem; color: #94a3b8;">جاري تحميل الملاحظات...</div>';
+                
+                const notesQuery = query(collection(db, 'notes'), orderBy('createdAt', 'desc'));
+                const notesSnapshot = await getDocs(notesQuery);
+                
+                allNotes = notesSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log('Loaded notes from Firebase:', allNotes.length);
+                displayNotes(allNotes);
+            } catch (error) {
+                console.error('Error loading notes:', error);
+                notesGrid.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                        <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">⚠️</span>
+                        <h3 style="color: #f87171; margin-bottom: 1rem;">خطأ في تحميل الملاحظات</h3>
+                        <p style="color: #94a3b8;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayNotes(notes) {
+            if (notes.length === 0) {
+                notesGrid.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: #94a3b8;">
+                        <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">📝</span>
+                        <h3>لا توجد ملاحظات متاحة</h3>
+                        <p>سيتم إضافة المحتوى قريباً</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const categoryLabels = {
+                'general': 'عام',
+                'important': 'مهم',
+                'exam': 'متعلق بالامتحان'
+            };
+
+            const priorityClasses = {
+                'general': 'priority-low',
+                'important': 'priority-medium',
+                'exam': 'priority-high'
+            };
+
+            notesGrid.innerHTML = notes.map(note => `
+                <div class="note-card">
+                    <div class="note-header">
+                        <span class="note-priority ${priorityClasses[note.category] || 'priority-low'}">
+                            ${categoryLabels[note.category] || 'عام'}
+                        </span>
+                        <span class="note-date">${new Date(note.createdAt).toLocaleDateString('ar-EG')}</span>
+                    </div>
+                    <h3 class="note-title">${note.title}</h3>
+                    <p class="note-content">${note.content}</p>
+                </div>
+            `).join('');
+        }
+
+        // Search and Filter
+        if (searchInput) {
+            searchInput.addEventListener('input', filterNotes);
+        }
+        
+        if (priorityFilter) {
+            priorityFilter.addEventListener('change', filterNotes);
+        }
 
         function filterNotes() {
             const searchTerm = searchInput.value.toLowerCase();
-            const priority = priorityFilter.value;
-            // Filter logic will be implemented when notes are loaded
-            console.log('Search:', searchTerm, 'Priority:', priority);
+            const category = priorityFilter.value;
+            
+            let filtered = allNotes;
+            
+            if (searchTerm) {
+                filtered = filtered.filter(note => 
+                    note.title.toLowerCase().includes(searchTerm) ||
+                    note.content.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (category && category !== 'all') {
+                filtered = filtered.filter(note => note.category === category);
+            }
+            
+            displayNotes(filtered);
         }
     </script>
 </body>

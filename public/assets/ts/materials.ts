@@ -23,7 +23,9 @@ async function loadMaterials() {
     // Get materials for each grade
     ['1', '2', '3'].forEach(async (grade) => {
       const container = gradeContainers[grade];
-      if (!container) return;
+      if (!container) {
+        return;
+      }
 
       container.innerHTML = '<div class="loading"><div class="spinner"></div><span>جاري تحميل المذكرات...</span></div>';
 

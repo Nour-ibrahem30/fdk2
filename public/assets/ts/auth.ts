@@ -36,9 +36,15 @@ const googleLoginBtn = document.getElementById('googleLoginBtn') as HTMLButtonEl
  * @param {boolean} isLoading - Whether loading
  */
 function setLoading(isLoading: boolean): void {
-  if (loginBtn) loginBtn.disabled = isLoading;
-  if (googleLoginBtn) googleLoginBtn.disabled = isLoading;
-  if (loginBtn) loginBtn.classList.toggle('loading', isLoading);
+  if (loginBtn) {
+    loginBtn.disabled = isLoading;
+  }
+  if (googleLoginBtn) {
+    googleLoginBtn.disabled = isLoading;
+  }
+  if (loginBtn) {
+    loginBtn.classList.toggle('loading', isLoading);
+  }
 }
 
 /**

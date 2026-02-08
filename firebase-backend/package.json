@@ -9,6 +9,7 @@
     "dev": "nodemon src/index.js",
     "test": "node src/test/testFunctions.js",
     "setup-firebase": "node setupFirebase.js",
+    "setup-dashboard": "node setupDashboard.js",
     "create-teacher": "node src/createUsers.js",
     "seed-basic": "node src/seedBasicData.js",
     "seed-database": "node src/seedDatabase_updated.js",

@@ -92,6 +92,156 @@
     <div id="modalContainer"></div>
 
     <script src="../assets/js/components-loader.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAU0CCiQNrPEYpTNU4rAwmOmPUZnjb2FoU",
+            authDomain: "a-platform-for-learning.firebaseapp.com",
+            projectId: "a-platform-for-learning",
+            storageBucket: "a-platform-for-learning.firebasestorage.app",
+            messagingSenderId: "764579707883",
+            appId: "1:764579707883:web:5456e2348354cc58fab7ae",
+            measurementId: "G-4P972FP416",
+            databaseURL: "https://a-platform-for-learning-default-rtdb.firebaseio.com"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let allVideos = [];
+        const videosGrid = document.getElementById('videosGrid');
+        const emptyState = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                videosGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                        <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">🔒</span>
+                        <h3 style="color: #f87171; margin-bottom: 1rem;">يجب تسجيل الدخول</h3>
+                        <p style="color: #94a3b8; margin-bottom: 1.5rem;">يجب تسجيل الدخول لمشاهدة الفيديوهات</p>
+                        <a href="login.html" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; text-decoration: none; border-radius: 12px; transition: all 0.3s ease;">تسجيل الدخول</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Load videos from Firebase
+            await loadVideos();
+        });
+
+        async function loadVideos() {
+            try {
+                videosGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #94a3b8;">جاري تحميل الفيديوهات...</div>';
+                
+                const videosQuery = query(collection(db, 'videos'), orderBy('createdAt', 'desc'));
+                const videosSnapshot = await getDocs(videosQuery);
+                
+                allVideos = videosSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log('Loaded videos from Firebase:', allVideos.length);
+                displayVideos(allVideos);
+            } catch (error) {
+                console.error('Error loading videos:', error);
+                videosGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                        <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">⚠️</span>
+                        <h3 style="color: #f87171; margin-bottom: 1rem;">خطأ في تحميل الفيديوهات</h3>
+                        <p style="color: #94a3b8;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayVideos(videos) {
+            if (videos.length === 0) {
+                videosGrid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            videosGrid.style.display = 'grid';
+            emptyState.style.display = 'none';
+
+            videosGrid.innerHTML = videos.map(video => `
+                <div class="video-card" role="listitem">
+                    <div class="video-thumbnail">
+                        <img src="${getYoutubeThumbnail(video.videoUrl)}" alt="${video.title}" loading="lazy">
+                        <span class="video-duration">${video.duration || 0} دقيقة</span>
+                    </div>
+                    <div class="video-content">
+                        <h3 class="video-title">${video.title}</h3>
+                        ${video.notes ? `<p class="video-description">${video.notes}</p>` : ''}
+                        <div class="video-meta">
+                            <span>📹 ${video.source === 'youtube' ? 'YouTube' : 'مرفوع'}</span>
+                            <span>⏱️ ${video.duration || 0} دقيقة</span>
+                        </div>
+                        <button class="btn btn-primary btn-watch" onclick="window.location.href='video-player.html?id=${video.id}'" aria-label="مشاهدة ${video.title}">
+                            <span aria-hidden="true">▶️</span>
+                            مشاهدة الفيديو
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getYoutubeThumbnail(url) {
+            if (!url) return 'https://via.placeholder.com/400x225/1e293b/3b82f6?text=فيديو';
+            
+            const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(youtubeRegex);
+            
+            if (match && match[1]) {
+                return `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
+            }
+            
+            return 'https://via.placeholder.com/400x225/1e293b/3b82f6?text=فيديو';
+        }
+
+        // Search functionality
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filtered = allVideos.filter(video => 
+                    video.title.toLowerCase().includes(searchTerm) ||
+                    (video.notes && video.notes.toLowerCase().includes(searchTerm))
+                );
+                displayVideos(filtered);
+            });
+        }
+
+        // Sort functionality
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => {
+                const sortBy = e.target.value;
+                let sorted = [...allVideos];
+                
+                if (sortBy === 'newest') {
+                    sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                } else if (sortBy === 'oldest') {
+                    sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                } else if (sortBy === 'title') {
+                    sorted.sort((a, b) => a.title.localeCompare(b.title, 'ar'));
+                }
+                
+                displayVideos(sorted);
+            });
+        }
+    </script>
+    
     <script>
         (function() {
             var backToTopBtn = document.getElementById('backToTop');

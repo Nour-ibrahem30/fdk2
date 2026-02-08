@@ -20,48 +20,50 @@ const authBtn = document.getElementById('authBtn') as HTMLAnchorElement;
 const emptyState = document.getElementById('emptyState') as HTMLElement;
 
 async function loadExams() {
-    if (!examsGrid) return;
+  if (!examsGrid) {
+    return;
+  }
 
-    try {
-        examsGrid.innerHTML = '<div class="loading"><div class="spinner"></div><span>جاري تحميل الامتحانات...</span></div>';
+  try {
+    examsGrid.innerHTML = '<div class="loading"><div class="spinner"></div><span>جاري تحميل الامتحانات...</span></div>';
 
-        const examsQuery = query(collection(db, 'exams'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(examsQuery);
+    const examsQuery = query(collection(db, 'exams'), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(examsQuery);
 
-        if (snapshot.empty) {
-            examsGrid.style.display = 'none';
-            emptyState.style.display = 'flex';
-            return;
-        }
-
-        examsGrid.innerHTML = '';
-        examsGrid.style.display = 'grid';
-        emptyState.style.display = 'none';
-
-        snapshot.forEach((docSnap) => {
-            const exam = { id: docSnap.id, ...docSnap.data() } as Exam;
-            const card = createExamCard(exam);
-            examsGrid.appendChild(card);
-        });
-
-    } catch (error) {
-        console.error('Error loading exams:', error);
-        examsGrid.innerHTML = '<div class="error-state"><p>حدث خطأ أثناء تحميل الامتحانات</p></div>';
+    if (snapshot.empty) {
+      examsGrid.style.display = 'none';
+      emptyState.style.display = 'flex';
+      return;
     }
+
+    examsGrid.innerHTML = '';
+    examsGrid.style.display = 'grid';
+    emptyState.style.display = 'none';
+
+    snapshot.forEach((docSnap) => {
+      const exam = { id: docSnap.id, ...docSnap.data() } as Exam;
+      const card = createExamCard(exam);
+      examsGrid.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error('Error loading exams:', error);
+    examsGrid.innerHTML = '<div class="error-state"><p>حدث خطأ أثناء تحميل الامتحانات</p></div>';
+  }
 }
 
 function createExamCard(exam: Exam): HTMLElement {
-    const card = document.createElement('article');
-    card.className = 'exam-card';
-    card.setAttribute('role', 'listitem');
+  const card = document.createElement('article');
+  card.className = 'exam-card';
+  card.setAttribute('role', 'listitem');
 
-    const typeLabels = {
-        'true-false': 'صح وخطأ',
-        'multiple-choice': 'اختيار من متعدد',
-        'mixed': 'مزيج'
-    };
+  const typeLabels = {
+    'true-false': 'صح وخطأ',
+    'multiple-choice': 'اختيار من متعدد',
+    'mixed': 'مزيج'
+  };
 
-    card.innerHTML = `
+  card.innerHTML = `
     <div class="exam-header">
       <span class="exam-type">${typeLabels[exam.type]}</span>
       <span class="exam-duration">⏱️ ${exam.duration} دقيقة</span>
@@ -75,36 +77,36 @@ function createExamCard(exam: Exam): HTMLElement {
     </button>
   `;
 
-    const startBtn = card.querySelector('.start-exam-btn') as HTMLButtonElement;
-    startBtn.addEventListener('click', () => handleStartExam(exam));
+  const startBtn = card.querySelector('.start-exam-btn') as HTMLButtonElement;
+  startBtn.addEventListener('click', () => handleStartExam(exam));
 
-    return card;
+  return card;
 }
 
 async function handleStartExam(exam: Exam) {
-    if (!currentUser) {
-        (window as any).showToast('يجب تسجيل الدخول لبدء الامتحان', 'warning');
-        setTimeout(() => {
-            window.location.href = '/login.html';
-        }, 2000);
-        return;
-    }
+  if (!currentUser) {
+    (window as any).showToast('يجب تسجيل الدخول لبدء الامتحان', 'warning');
+    setTimeout(() => {
+      window.location.href = '/login.html';
+    }, 2000);
+    return;
+  }
 
-    currentExam = exam;
-    timeRemaining = exam.duration * 60;
-    showExamModal(exam);
-    startTimer();
+  currentExam = exam;
+  timeRemaining = exam.duration * 60;
+  showExamModal(exam);
+  startTimer();
 }
 
 function showExamModal(exam: Exam) {
-    const modal = document.createElement('div');
-    modal.className = 'modal active exam-modal';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-labelledby', 'exam-title');
+  const modal = document.createElement('div');
+  modal.className = 'modal active exam-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-labelledby', 'exam-title');
 
-    const questionsHTML = exam.questions.map((q, index) => {
-        if (q.type === 'true-false') {
-            return `
+  const questionsHTML = exam.questions.map((q, index) => {
+    if (q.type === 'true-false') {
+      return `
         <div class="question-item" data-question-index="${index}">
           <h4 class="question-text">${index + 1}. ${q.question}</h4>
           <div class="question-options">
@@ -119,8 +121,8 @@ function showExamModal(exam: Exam) {
           </div>
         </div>
       `;
-        } else {
-            return `
+    } else {
+      return `
         <div class="question-item" data-question-index="${index}">
           <h4 class="question-text">${index + 1}. ${q.question}</h4>
           <div class="question-options">
@@ -133,10 +135,10 @@ function showExamModal(exam: Exam) {
           </div>
         </div>
       `;
-        }
-    }).join('');
+    }
+  }).join('');
 
-    modal.innerHTML = `
+  modal.innerHTML = `
     <div class="modal-overlay"></div>
     <div class="modal-content modal-exam">
       <div class="exam-header-bar">
@@ -153,110 +155,112 @@ function showExamModal(exam: Exam) {
     </div>
   `;
 
-    document.body.appendChild(modal);
+  document.body.appendChild(modal);
 
-    const form = modal.querySelector('#examForm') as HTMLFormElement;
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        handleSubmitExam(exam, form);
-    });
+  const form = modal.querySelector('#examForm') as HTMLFormElement;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    handleSubmitExam(exam, form);
+  });
 }
 
 function startTimer() {
-    const timerDisplay = document.getElementById('timerDisplay');
+  const timerDisplay = document.getElementById('timerDisplay');
 
-    examTimer = window.setInterval(() => {
-        timeRemaining--;
+  examTimer = window.setInterval(() => {
+    timeRemaining--;
 
-        if (timerDisplay) {
-            timerDisplay.textContent = formatTime(timeRemaining);
+    if (timerDisplay) {
+      timerDisplay.textContent = formatTime(timeRemaining);
 
-            if (timeRemaining <= 60) {
-                timerDisplay.style.color = '#ff4444';
-            }
-        }
+      if (timeRemaining <= 60) {
+        timerDisplay.style.color = '#ff4444';
+      }
+    }
 
-        if (timeRemaining <= 0) {
-            stopTimer();
-            autoSubmitExam();
-        }
-    }, 1000);
+    if (timeRemaining <= 0) {
+      stopTimer();
+      autoSubmitExam();
+    }
+  }, 1000);
 }
 
 function stopTimer() {
-    if (examTimer) {
-        clearInterval(examTimer);
-        examTimer = null;
-    }
+  if (examTimer) {
+    clearInterval(examTimer);
+    examTimer = null;
+  }
 }
 
 function formatTime(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 async function handleSubmitExam(exam: Exam, form: HTMLFormElement) {
-    stopTimer();
+  stopTimer();
 
-    const answers: (number | boolean)[] = [];
-    let score = 0;
+  const answers: (number | boolean)[] = [];
+  let score = 0;
 
-    exam.questions.forEach((q, index) => {
-        const selected = form.querySelector(`input[name="q${index}"]:checked`) as HTMLInputElement;
+  exam.questions.forEach((q, index) => {
+    const selected = form.querySelector(`input[name="q${index}"]:checked`) as HTMLInputElement;
 
-        if (selected) {
-            const answer = q.type === 'true-false' ? selected.value === 'true' : parseInt(selected.value);
-            answers.push(answer);
+    if (selected) {
+      const answer = q.type === 'true-false' ? selected.value === 'true' : parseInt(selected.value);
+      answers.push(answer);
 
-            if (answer === q.correctAnswer) {
-                score += q.points;
-            }
-        } else {
-            answers.push(q.type === 'true-false' ? false : -1);
-        }
-    });
-
-    const result: ExamResult = {
-        id: `${currentUser!.uid}_${exam.id}_${Date.now()}`,
-        examId: exam.id,
-        studentId: currentUser!.uid,
-        answers,
-        score,
-        totalQuestions: exam.questions.length,
-        completedAt: new Date().toISOString()
-    };
-
-    try {
-        await setDoc(doc(db, 'examResults', result.id), result);
-        showResultModal(result, exam);
-    } catch (error) {
-        console.error('Error saving exam result:', error);
-        (window as any).showToast('حدث خطأ أثناء حفظ النتيجة', 'error');
+      if (answer === q.correctAnswer) {
+        score += q.points;
+      }
+    } else {
+      answers.push(q.type === 'true-false' ? false : -1);
     }
+  });
+
+  const result: ExamResult = {
+    id: `${currentUser!.uid}_${exam.id}_${Date.now()}`,
+    examId: exam.id,
+    studentId: currentUser!.uid,
+    answers,
+    score,
+    totalQuestions: exam.questions.length,
+    completedAt: new Date().toISOString()
+  };
+
+  try {
+    await setDoc(doc(db, 'examResults', result.id), result);
+    showResultModal(result, exam);
+  } catch (error) {
+    console.error('Error saving exam result:', error);
+    (window as any).showToast('حدث خطأ أثناء حفظ النتيجة', 'error');
+  }
 }
 
 function autoSubmitExam() {
-    const form = document.getElementById('examForm') as HTMLFormElement;
-    if (form && currentExam) {
-        (window as any).showToast('انتهى الوقت! سيتم إرسال إجاباتك تلقائياً', 'warning', 3000);
-        setTimeout(() => {
-            if (currentExam) { // Check again to satisfy TypeScript
-                handleSubmitExam(currentExam, form);
-            }
-        }, 1000);
-    }
+  const form = document.getElementById('examForm') as HTMLFormElement;
+  if (form && currentExam) {
+    (window as any).showToast('انتهى الوقت! سيتم إرسال إجاباتك تلقائياً', 'warning', 3000);
+    setTimeout(() => {
+      if (currentExam) { // Check again to satisfy TypeScript
+        handleSubmitExam(currentExam, form);
+      }
+    }, 1000);
+  }
 }
 
 function showResultModal(result: ExamResult, exam: Exam) {
-    const modal = document.querySelector('.exam-modal');
-    if (!modal) return;
+  const modal = document.querySelector('.exam-modal');
+  if (!modal) {
+    return;
+  }
 
-    const totalPoints = exam.questions.reduce((sum, q) => sum + q.points, 0);
-    const percentage = Math.round((result.score / totalPoints) * 100);
-    const passed = percentage >= 50;
+  const totalPoints = exam.questions.reduce((sum, q) => sum + q.points, 0);
+  const percentage = Math.round((result.score / totalPoints) * 100);
+  const passed = percentage >= 50;
 
-    modal.innerHTML = `
+  modal.innerHTML = `
     <div class="modal-overlay"></div>
     <div class="modal-content modal-result">
       <div class="result-icon ${passed ? 'success' : 'fail'}" aria-hidden="true">
@@ -286,43 +290,43 @@ function showResultModal(result: ExamResult, exam: Exam) {
 }
 
 searchInput?.addEventListener('input', (e) => {
-    const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
-    const cards = examsGrid.querySelectorAll('.exam-card');
+  const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
+  const cards = examsGrid.querySelectorAll('.exam-card');
 
-    cards.forEach((card) => {
-        const title = card.querySelector('.exam-title')?.textContent?.toLowerCase() || '';
-        card.classList.toggle('hidden', !title.includes(searchTerm));
-    });
+  cards.forEach((card) => {
+    const title = card.querySelector('.exam-title')?.textContent?.toLowerCase() || '';
+    card.classList.toggle('hidden', !title.includes(searchTerm));
+  });
 });
 
 typeFilter?.addEventListener('change', (e) => {
-    const filterValue = (e.target as HTMLSelectElement).value;
-    const cards = examsGrid.querySelectorAll('.exam-card');
+  const filterValue = (e.target as HTMLSelectElement).value;
+  const cards = examsGrid.querySelectorAll('.exam-card');
 
-    cards.forEach((card) => {
-        if (filterValue === 'all') {
-            card.classList.remove('hidden');
-        } else {
-            const type = card.querySelector('.exam-type')?.textContent;
-            const typeMap: { [key: string]: string } = {
-                'صح وخطأ': 'true-false',
-                'اختيار من متعدد': 'multiple-choice',
-                'مزيج': 'mixed'
-            };
-            card.classList.toggle('hidden', typeMap[type || ''] !== filterValue);
-        }
-    });
+  cards.forEach((card) => {
+    if (filterValue === 'all') {
+      card.classList.remove('hidden');
+    } else {
+      const type = card.querySelector('.exam-type')?.textContent;
+      const typeMap: { [key: string]: string } = {
+        'صح وخطأ': 'true-false',
+        'اختيار من متعدد': 'multiple-choice',
+        'مزيج': 'mixed'
+      };
+      card.classList.toggle('hidden', typeMap[type || ''] !== filterValue);
+    }
+  });
 });
 
 onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-            currentUser = userDoc.data() as User;
-            authBtn.textContent = 'الملف الشخصي';
-            authBtn.href = currentUser.role === 'teacher' ? '/dashboard.html' : '/profile.html';
-        }
+  if (user) {
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    if (userDoc.exists()) {
+      currentUser = userDoc.data() as User;
+      authBtn.textContent = 'الملف الشخصي';
+      authBtn.href = currentUser.role === 'teacher' ? '/dashboard.html' : '/profile.html';
     }
+  }
 });
 
 document.addEventListener('DOMContentLoaded', loadExams);

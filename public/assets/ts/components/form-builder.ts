@@ -90,58 +90,58 @@ export class FormBuilder {
     let input: HTMLElement;
 
     switch (field.type) {
-      case 'textarea':
-        input = createElement('textarea', { id: field.name, name: field.name });
-        (input as HTMLTextAreaElement).placeholder = field.placeholder || '';
-        (input as HTMLTextAreaElement).value = field.value || '';
-        break;
+    case 'textarea':
+      input = createElement('textarea', { id: field.name, name: field.name });
+      (input as HTMLTextAreaElement).placeholder = field.placeholder || '';
+      (input as HTMLTextAreaElement).value = field.value || '';
+      break;
 
-      case 'select':
-        input = createElement('select', { id: field.name, name: field.name });
-        field.options?.forEach(option => {
-          const optionEl = createElement('option', { value: option.value });
-          optionEl.textContent = option.label;
-          input.appendChild(optionEl);
-        });
-        (input as HTMLSelectElement).value = field.value || '';
-        break;
+    case 'select':
+      input = createElement('select', { id: field.name, name: field.name });
+      field.options?.forEach(option => {
+        const optionEl = createElement('option', { value: option.value });
+        optionEl.textContent = option.label;
+        input.appendChild(optionEl);
+      });
+      (input as HTMLSelectElement).value = field.value || '';
+      break;
 
-      case 'checkbox':
-      case 'radio':
-        input = createElement('div', { class: 'checkbox-group' });
-        field.options?.forEach(option => {
-          const wrapper = createElement('div', { class: `${field.type}-wrapper` });
-          const checkbox = createElement('input', {
-            type: field.type,
-            id: `${field.name}-${option.value}`,
-            name: field.name,
-            value: option.value
-          });
-          const label = createElement('label', { for: `${field.name}-${option.value}` });
-          label.textContent = option.label;
-
-          wrapper.appendChild(checkbox);
-          wrapper.appendChild(label);
-          input.appendChild(wrapper);
-        });
-        break;
-
-      case 'file':
-        input = createElement('input', {
-          type: 'file',
-          id: field.name,
-          name: field.name
-        });
-        break;
-
-      default:
-        input = createElement('input', {
+    case 'checkbox':
+    case 'radio':
+      input = createElement('div', { class: 'checkbox-group' });
+      field.options?.forEach(option => {
+        const wrapper = createElement('div', { class: `${field.type}-wrapper` });
+        const checkbox = createElement('input', {
           type: field.type,
-          id: field.name,
-          name: field.name
+          id: `${field.name}-${option.value}`,
+          name: field.name,
+          value: option.value
         });
-        (input as HTMLInputElement).placeholder = field.placeholder || '';
-        (input as HTMLInputElement).value = field.value || '';
+        const label = createElement('label', { for: `${field.name}-${option.value}` });
+        label.textContent = option.label;
+
+        wrapper.appendChild(checkbox);
+        wrapper.appendChild(label);
+        input.appendChild(wrapper);
+      });
+      break;
+
+    case 'file':
+      input = createElement('input', {
+        type: 'file',
+        id: field.name,
+        name: field.name
+      });
+      break;
+
+    default:
+      input = createElement('input', {
+        type: field.type,
+        id: field.name,
+        name: field.name
+      });
+      (input as HTMLInputElement).placeholder = field.placeholder || '';
+      (input as HTMLInputElement).value = field.value || '';
     }
 
     // Add ARIA attributes
@@ -188,10 +188,14 @@ export class FormBuilder {
    */
   validateField(fieldName: string): boolean {
     const field = this.fields.get(fieldName);
-    if (!field) return false;
+    if (!field) {
+      return false;
+    }
 
     const input = querySelector<HTMLInputElement>(`#${fieldName}`, this.formElement);
-    if (!input) return false;
+    if (!input) {
+      return false;
+    }
 
     const value = this.getFieldValue(fieldName);
     let error: string | undefined;
@@ -259,7 +263,9 @@ export class FormBuilder {
       this.formElement
     );
 
-    if (!input) return null;
+    if (!input) {
+      return null;
+    }
 
     if (input instanceof HTMLInputElement) {
       if (input.type === 'checkbox' || input.type === 'radio') {

@@ -205,6 +205,142 @@
     </style>
 
     <script src="../assets/js/components-loader.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAU0CCiQNrPEYpTNU4rAwmOmPUZnjb2FoU",
+            authDomain: "a-platform-for-learning.firebaseapp.com",
+            projectId: "a-platform-for-learning",
+            storageBucket: "a-platform-for-learning.firebasestorage.app",
+            messagingSenderId: "764579707883",
+            appId: "1:764579707883:web:5456e2348354cc58fab7ae",
+            measurementId: "G-4P972FP416",
+            databaseURL: "https://a-platform-for-learning-default-rtdb.firebaseio.com"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let allExams = [];
+        const examsGrid = document.getElementById('examsGrid');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                examsGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                        <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">🔒</span>
+                        <h3 style="color: #f87171; margin-bottom: 1rem;">يجب تسجيل الدخول</h3>
+                        <p style="color: #94a3b8; margin-bottom: 1.5rem;">يجب تسجيل الدخول لحل الامتحانات</p>
+                        <a href="login.html" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; text-decoration: none; border-radius: 12px; transition: all 0.3s ease;">تسجيل الدخول</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Load exams from Firebase
+            await loadExams();
+        });
+
+        async function loadExams() {
+            try {
+                examsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #94a3b8;">جاري تحميل الامتحانات...</div>';
+                
+                const examsQuery = query(collection(db, 'exams'), orderBy('createdAt', 'desc'));
+                const examsSnapshot = await getDocs(examsQuery);
+                
+                allExams = examsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log('Loaded exams from Firebase:', allExams.length);
+                displayExams(allExams);
+            } catch (error) {
+                console.error('Error loading exams:', error);
+                examsGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                        <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">⚠️</span>
+                        <h3 style="color: #f87171; margin-bottom: 1rem;">خطأ في تحميل الامتحانات</h3>
+                        <p style="color: #94a3b8;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayExams(exams) {
+            if (exams.length === 0) {
+                examsGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>لا توجد امتحانات متاحة</h3>
+                        <p>سيتم إضافة المحتوى قريباً</p>
+                    </div>
+                `;
+                return;
+            }
+
+            examsGrid.innerHTML = exams.map(exam => {
+                // تحديد نوع الامتحان
+                const isInternal = exam.examType === 'internal' && exam.questions && exam.questions.length > 0;
+                const examLink = isInternal 
+                    ? `exam-player.html?id=${exam.id}` 
+                    : exam.examUrl;
+                const examTarget = isInternal ? '_self' : '_blank';
+                
+                return `
+                    <div class="exam-card">
+                        <span class="exam-type">${isInternal ? '📝 امتحان مدمج' : '🔗 امتحان خارجي'}</span>
+                        <h3 class="exam-title">${exam.title}</h3>
+                        ${exam.description ? `<p style="color: #94a3b8; margin-bottom: 1rem;">${exam.description}</p>` : ''}
+                        <div class="exam-info">
+                            <span>
+                                <span aria-hidden="true">⏱️</span>
+                                ${exam.duration || 0} دقيقة
+                            </span>
+                            <span>
+                                <span aria-hidden="true">📝</span>
+                                ${isInternal ? exam.questions.length + ' سؤال' : 'اختبار تفاعلي'}
+                            </span>
+                        </div>
+                        <div class="exam-actions">
+                            <button class="btn-start" onclick="window.open('${examLink}', '${examTarget}')" aria-label="بدء ${exam.title}">
+                                <span aria-hidden="true">🚀</span>
+                                ابدأ الامتحان
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Filter functionality
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const filter = btn.dataset.filter;
+                
+                if (filter === 'all') {
+                    displayExams(allExams);
+                } else {
+                    // For now, show all exams since we don't have type filtering yet
+                    displayExams(allExams);
+                }
+            });
+        });
+    </script>
+    
     <script src="../assets/dist/exams.js" type="module"></script>
     <script>
         // Exam Filters

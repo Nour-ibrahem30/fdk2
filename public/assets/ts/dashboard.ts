@@ -24,7 +24,9 @@ async function checkAuth() {
     try {
       const parsed = JSON.parse(storedUser) as User;
       currentUser = parsed;
-      if (userName) userName.textContent = parsed.name;
+      if (userName) {
+        userName.textContent = parsed.name;
+      }
       return Promise.resolve(parsed);
     } catch (e) {
       // fall through to normal auth check
@@ -55,7 +57,9 @@ async function checkAuth() {
       }
 
       currentUser = userData;
-      if (userName) userName.textContent = userData.name;
+      if (userName) {
+        userName.textContent = userData.name;
+      }
       resolve(userData);
     });
   });
@@ -76,24 +80,24 @@ function switchSection(sectionId: string) {
 
 async function loadSectionData(sectionId: string) {
   switch (sectionId) {
-    case 'overview':
-      await loadOverview();
-      break;
-    case 'videos':
-      await loadVideosManagement();
-      break;
-    case 'exams':
-      await loadExamsManagement();
-      break;
-    case 'notes':
-      await loadNotesManagement();
-      break;
-    case 'testimonials':
-      await loadTestimonialsManagement();
-      break;
-    case 'students':
-      await loadStudents();
-      break;
+  case 'overview':
+    await loadOverview();
+    break;
+  case 'videos':
+    await loadVideosManagement();
+    break;
+  case 'exams':
+    await loadExamsManagement();
+    break;
+  case 'notes':
+    await loadNotesManagement();
+    break;
+  case 'testimonials':
+    await loadTestimonialsManagement();
+    break;
+  case 'students':
+    await loadStudents();
+    break;
   }
 }
 
@@ -291,9 +295,13 @@ async function loadStudents() {
     container.addEventListener('click', async (ev) => {
       const target = ev.target as HTMLElement;
       const card = target.closest('.student-card') as HTMLElement | null;
-      if (!card) return;
+      if (!card) {
+        return;
+      }
       const uid = card.getAttribute('data-uid');
-      if (!uid) return;
+      if (!uid) {
+        return;
+      }
       openStudentModal(uid);
     });
   } catch (error) {
@@ -311,7 +319,9 @@ async function openStudentModal(uid: string) {
     }
     const s = docSnap.data() as any;
     const modal = document.getElementById('studentModal');
-    if (!modal) return;
+    if (!modal) {
+      return;
+    }
     (document.getElementById('modalStudentName') as HTMLElement).textContent = s.name || s.email || 'طالب';
     (document.getElementById('modalStudentEmail') as HTMLElement).textContent = s.email || '';
     (document.getElementById('modalStudentJoined') as HTMLElement).textContent = s.createdAt ? new Date(s.createdAt).toLocaleString('ar-EG') : '-';
@@ -361,7 +371,9 @@ function createManagementItem(item: any, type: string): HTMLElement {
 }
 
 async function handleDelete(id: string, type: string) {
-  if (!confirm('هل أنت متأكد من الحذف؟')) return;
+  if (!confirm('هل أنت متأكد من الحذف؟')) {
+    return;
+  }
 
   const collections: { [key: string]: string } = {
     video: 'lessons',
@@ -383,7 +395,9 @@ sidebarLinks.forEach(link => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
     const section = link.getAttribute('data-section');
-    if (section) switchSection(section);
+    if (section) {
+      switchSection(section);
+    }
   });
 });
 
@@ -426,10 +440,14 @@ async function setupEventListeners() {
 
 function showAddVideoModal() {
   const title = prompt('عنوان الفيديو:');
-  if (!title) return;
+  if (!title) {
+    return;
+  }
 
   const videoUrl = prompt('رابط الفيديو (YouTube):');
-  if (!videoUrl) return;
+  if (!videoUrl) {
+    return;
+  }
 
   const notes = prompt('ملاحظات (اختياري):') || '';
 
@@ -442,7 +460,9 @@ async function addVideo(title: string, videoUrl: string, notes: string) {
     if (!currentUser) {
       const stored = localStorage.getItem('currentUser');
       if (stored) {
-        try { currentUser = JSON.parse(stored) as User; } catch(e) {}
+        try {
+          currentUser = JSON.parse(stored) as User; 
+        } catch (e) {}
       }
     }
 
@@ -490,10 +510,14 @@ async function addVideo(title: string, videoUrl: string, notes: string) {
 
 function showAddExamModal() {
   const title = prompt('عنوان الامتحان:');
-  if (!title) return;
+  if (!title) {
+    return;
+  }
 
   const durationStr = prompt('مدة الامتحان (بالدقائق):');
-  if (!durationStr) return;
+  if (!durationStr) {
+    return;
+  }
 
   const duration = parseInt(durationStr);
 
@@ -506,7 +530,9 @@ async function addExam(title: string, duration: number) {
     if (!currentUser) {
       const stored = localStorage.getItem('currentUser');
       if (stored) {
-        try { currentUser = JSON.parse(stored) as User; } catch(e) {}
+        try {
+          currentUser = JSON.parse(stored) as User; 
+        } catch (e) {}
       }
     }
 
@@ -554,10 +580,14 @@ async function addExam(title: string, duration: number) {
 
 function showAddNoteModal() {
   const title = prompt('عنوان الملاحظة:');
-  if (!title) return;
+  if (!title) {
+    return;
+  }
 
   const content = prompt('محتوى الملاحظة:');
-  if (!content) return;
+  if (!content) {
+    return;
+  }
 
   addNote(title, content);
 }
@@ -568,7 +598,9 @@ async function addNote(title: string, content: string) {
     if (!currentUser) {
       const stored = localStorage.getItem('currentUser');
       if (stored) {
-        try { currentUser = JSON.parse(stored) as User; } catch(e) {}
+        try {
+          currentUser = JSON.parse(stored) as User; 
+        } catch (e) {}
       }
     }
 

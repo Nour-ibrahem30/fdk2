@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشاهدة الفيديو | منصة الفيلسوف التعليمية</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: #000; color: #fff; }
+        .video-container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .video-player { position: relative; width: 100%; padding-bottom: 56.25%; background: #000; border-radius: 12px; overflow: hidden; margin-bottom: 2rem; }
+        .video-player iframe, .video-player video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .video-info { background: rgba(30, 41, 59, 0.8); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; }
+        .video-title { font-size: 2rem; margin-bottom: 1rem; color: #3b82f6; }
+        .video-meta { display: flex; gap: 2rem; color: #94a3b8; margin-bottom: 1rem; }
+        .video-description { color: #cbd5e1; line-height: 1.8; }
+        .btn-back { display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; }
+        .btn-back:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4); }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <div class="video-player" id="videoPlayer">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8;">جاري تحميل الفيديو...</div>
+        </div>
+        <div class="video-info">
+            <h1 class="video-title" id="videoTitle">عنوان الفيديو</h1>
+            <div class="video-meta">
+                <span id="videoDuration">⏱️ 0 دقيقة</span>
+                <span id="videoSource">📹 YouTube</span>
+            </div>
+            <p class="video-description" id="videoDescription"></p>
+        </div>
+        <a href="videos.html" class="btn-back">← العودة للفيديوهات</a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAU0CCiQNrPEYpTNU4rAwmOmPUZnjb2FoU",
+            authDomain: "a-platform-for-learning.firebaseapp.com",
+            projectId: "a-platform-for-learning",
+            storageBucket: "a-platform-for-learning.firebasestorage.app",
+            messagingSenderId: "764579707883",
+            appId: "1:764579707883:web:5456e2348354cc58fab7ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoId = urlParams.get('id');
+
+        async function loadVideo() {
+            if (!videoId) {
+                alert('لم يتم تحديد الفيديو');
+                window.location.href = 'videos.html';
+                return;
+            }
+
+            try {
+                const videoDoc = await getDoc(doc(db, 'videos', videoId));
+                if (!videoDoc.exists()) {
+                    alert('الفيديو غير موجود');
+                    window.location.href = 'videos.html';
+                    return;
+                }
+
+                const video = videoDoc.data();
+                document.getElementById('videoTitle').textContent = video.title;
+                document.getElementById('videoDuration').textContent = `⏱️ ${video.duration || 0} دقيقة`;
+                document.getElementById('videoSource').textContent = `📹 ${video.source === 'youtube' ? 'YouTube' : 'مرفوع'}`;
+                document.getElementById('videoDescription').textContent = video.notes || 'لا يوجد وصف';
+
+                const videoPlayer = document.getElementById('videoPlayer');
+                if (video.source === 'youtube') {
+                    const videoIdMatch = video.videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+                    if (videoIdMatch && videoIdMatch[1]) {
+                        videoPlayer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoIdMatch[1]}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                    } else {
+                        videoPlayer.innerHTML = '<p style="text-align: center; padding: 2rem;">رابط الفيديو غير صحيح</p>';
+                    }
+                } else {
+                    videoPlayer.innerHTML = `<video controls style="width: 100%; height: 100%;"><source src="${video.videoUrl}" type="video/mp4">متصفحك لا يدعم تشغيل الفيديو</video>`;
+                }
+            } catch (error) {
+                console.error('Error loading video:', error);
+                alert('خطأ في تحميل الفيديو');
+                window.location.href = 'videos.html';
+            }
+        }
+
+        loadVideo();
+    </script>
+</body>
+</html>

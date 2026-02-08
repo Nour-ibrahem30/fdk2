@@ -31,7 +31,7 @@ export const API_ENDPOINTS = {
     REFRESH: '/auth/refresh',
     VERIFY_EMAIL: '/auth/verify-email',
     RESET_PASSWORD: '/auth/reset-password',
-    CHECK_AUTH: '/auth/check',
+    CHECK_AUTH: '/auth/check'
   },
 
   // Users
@@ -40,7 +40,7 @@ export const API_ENDPOINTS = {
     UPDATE_PROFILE: '/users/profile/update',
     GET_USER: '/users/:userId',
     LIST_USERS: '/users',
-    DELETE_ACCOUNT: '/users/account/delete',
+    DELETE_ACCOUNT: '/users/account/delete'
   },
 
   // Exams
@@ -51,7 +51,7 @@ export const API_ENDPOINTS = {
     UPDATE: '/exams/:examId/update',
     DELETE: '/exams/:examId/delete',
     SUBMIT: '/exams/:examId/submit',
-    GET_RESULTS: '/exams/:examId/results',
+    GET_RESULTS: '/exams/:examId/results'
   },
 
   // Materials
@@ -59,7 +59,7 @@ export const API_ENDPOINTS = {
     LIST: '/materials',
     GET: '/materials/:materialId',
     UPLOAD: '/materials/upload',
-    DELETE: '/materials/:materialId/delete',
+    DELETE: '/materials/:materialId/delete'
   },
 
   // Videos
@@ -68,7 +68,7 @@ export const API_ENDPOINTS = {
     GET: '/videos/:videoId',
     UPLOAD: '/videos/upload',
     DELETE: '/videos/:videoId/delete',
-    GET_COMMENTS: '/videos/:videoId/comments',
+    GET_COMMENTS: '/videos/:videoId/comments'
   },
 
   // Notes
@@ -77,14 +77,14 @@ export const API_ENDPOINTS = {
     GET: '/notes/:noteId',
     CREATE: '/notes/create',
     UPDATE: '/notes/:noteId/update',
-    DELETE: '/notes/:noteId/delete',
+    DELETE: '/notes/:noteId/delete'
   },
 
   // Logs
   LOGS: {
     ERROR: '/logs/errors',
-    INFO: '/logs/info',
-  },
+    INFO: '/logs/info'
+  }
 } as const;
 
 // ============================================================================
@@ -125,7 +125,7 @@ export const ERROR_MESSAGES = {
   // Generic
   UNKNOWN_ERROR: 'حدث خطأ غير متوقع. يرجى المحاولة لاحقاً',
   OPERATION_FAILED: 'فشل الإجراء',
-  SUCCESS: 'تم الإجراء بنجاح',
+  SUCCESS: 'تم الإجراء بنجاح'
 } as const;
 
 // ============================================================================
@@ -141,7 +141,7 @@ export const SUCCESS_MESSAGES = {
   NOTE_UPDATED: 'تم تحديث الملاحظة بنجاح',
   NOTE_DELETED: 'تم حذف الملاحظة بنجاح',
   UPLOAD_SUCCESS: 'تم التحميل بنجاح',
-  DELETE_SUCCESS: 'تم الحذف بنجاح',
+  DELETE_SUCCESS: 'تم الحذف بنجاح'
 } as const;
 
 // ============================================================================
@@ -167,7 +167,7 @@ export const STORAGE_KEYS = {
 
   // Session
   LAST_PAGE: 'philosopher_last_page',
-  SESSION_TIMESTAMP: 'philosopher_session_timestamp',
+  SESSION_TIMESTAMP: 'philosopher_session_timestamp'
 } as const;
 
 // ============================================================================
@@ -184,7 +184,7 @@ export const PAGE_ROUTES = {
   VIDEOS: '/videos.html',
   NOTES: '/notes.html',
   NOT_FOUND: '/404.html',
-  UNAUTHORIZED: '/401.html',
+  UNAUTHORIZED: '/401.html'
 } as const;
 
 // ============================================================================
@@ -194,7 +194,7 @@ export const USER_ROLES = {
   ADMIN: 'admin',
   TEACHER: 'teacher',
   STUDENT: 'student',
-  GUEST: 'guest',
+  GUEST: 'guest'
 } as const;
 
 export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
@@ -205,7 +205,7 @@ export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
 export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 10,
   MAX_PAGE_SIZE: 100,
-  DEFAULT_PAGE: 1,
+  DEFAULT_PAGE: 1
 } as const;
 
 // ============================================================================
@@ -223,8 +223,8 @@ export const FILE_UPLOAD_CONFIG = {
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  ],
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ]
 } as const;
 
 // ============================================================================
@@ -239,7 +239,7 @@ export const TIME_CONSTANTS = {
   // API/Network timeouts
   REQUEST_TIMEOUT: 30 * 1000, // 30 seconds
   SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
-  CACHE_EXPIRY: 5 * 60 * 1000, // 5 minutes
+  CACHE_EXPIRY: 5 * 60 * 1000 // 5 minutes
 } as const;
 
 // ============================================================================
@@ -250,7 +250,7 @@ export const REGEX_PATTERNS = {
   PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
   PHONE: /^[\d+\-\s()]+$/,
   URL: /^https?:\/\/.+/,
-  ARABIC_TEXT: /[\u0600-\u06FF]/,
+  ARABIC_TEXT: /[\u0600-\u06FF]/
 } as const;
 
 // ============================================================================
@@ -260,7 +260,7 @@ export const DEFAULT_VALUES = {
   ITEMS_PER_PAGE: 10,
   SEARCH_DEBOUNCE_MS: 300,
   TOAST_DURATION_MS: 3000,
-  ANIMATION_DURATION_MS: 300,
+  ANIMATION_DURATION_MS: 300
 } as const;
 
 // ============================================================================
@@ -271,5 +271,5 @@ export const FEATURE_FLAGS = {
   ENABLE_NOTIFICATIONS: true,
   ENABLE_COMMENTS: true,
   ENABLE_SOCIAL_SHARING: true,
-  MAINTENANCE_MODE: false,
+  MAINTENANCE_MODE: false
 } as const;

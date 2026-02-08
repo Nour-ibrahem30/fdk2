@@ -454,31 +454,27 @@
     <div class="dashboard-layout">
         <aside class="dashboard-sidebar" role="navigation" aria-label="القائمة الجانبية">
             <nav class="sidebar-nav">
-                <button class="sidebar-link active" data-section="overview">
+                <button href="#overview" class="sidebar-link active" data-section="overview">
                     <span class="sidebar-icon" aria-hidden="true">📊</span>
                     <span>نظرة عامة</span>
                 </button>
-                <button class="sidebar-link" data-section="videos">
+                <button href="#videos" class="sidebar-link" data-section="videos">
                     <span class="sidebar-icon" aria-hidden="true">🎥</span>
                     <span>إدارة الفيديوهات</span>
                 </button>
-                <button class="sidebar-link" data-section="exams">
+                <button href="#exams" class="sidebar-link" data-section="exams">
                     <span class="sidebar-icon" aria-hidden="true">📋</span>
                     <span>إدارة الامتحانات</span>
                 </button>
-                <button class="sidebar-link" data-section="notes">
+                <button href="#notes" class="sidebar-link" data-section="notes">
                     <span class="sidebar-icon" aria-hidden="true">📝</span>
                     <span>إدارة الملاحظات</span>
                 </button>
-                <button class="sidebar-link" data-section="materials">
+                <button href="#materials" class="sidebar-link" data-section="materials">
                     <span class="sidebar-icon" aria-hidden="true">📚</span>
                     <span>إدارة المذكرات</span>
                 </button>
-                <button class="sidebar-link" data-section="testimonials">
-                    <span class="sidebar-icon" aria-hidden="true">💬</span>
-                    <span>إدارة الآراء</span>
-                </button>
-                <button class="sidebar-link" data-section="students">
+                <button href="#students" class="sidebar-link" data-section="students">
                     <span class="sidebar-icon" aria-hidden="true">👥</span>
                     <span>الطلاب</span>
                 </button>
@@ -581,17 +577,6 @@
                 <div id="materialsGrade3" class="materials-content" style="display: none;"></div>
             </section>
 
-            <section id="testimonials-section" class="dashboard-section">
-                <div class="section-header">
-                    <h1 class="dashboard-title">إدارة آراء الطلاب</h1>
-                    <button class="btn btn-primary" id="addTestimonialBtn">
-                        <span aria-hidden="true">➕</span> إضافة رأي
-                    </button>
-                </div>
-                
-                <div id="testimonialsList" class="content-list"></div>
-            </section>
-
             <section id="students-section" class="dashboard-section">
                 <h1 class="dashboard-title">الطلاب المسجلين</h1>
                 <div id="studentsList" class="students-grid"></div>
@@ -602,43 +587,8 @@
     <div id="footer-placeholder"></div>
 
     <script src="../assets/js/components-loader.js"></script>
-    
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        // Firebase config
-        const firebaseConfig = {
-            apiKey: "AIzaSyAU0CCiQNrPEYpTNU4rAwmOmPUZnjb2FoU",
-            authDomain: "a-platform-for-learning.firebaseapp.com",
-            projectId: "a-platform-for-learning",
-            storageBucket: "a-platform-for-learning.firebasestorage.app",
-            messagingSenderId: "764579707883",
-            appId: "1:764579707883:web:5456e2348354cc58fab7ae",
-            measurementId: "G-4P972FP416",
-            databaseURL: "https://a-platform-for-learning-default-rtdb.firebaseio.com"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // Make Firebase available globally for the rest of the script
-        window.firebaseApp = app;
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
-        window.firebaseCollection = collection;
-        window.firebaseGetDocs = getDocs;
-        window.firebaseAddDoc = addDoc;
-        window.firebaseDeleteDoc = deleteDoc;
-        window.firebaseDoc = doc;
-        window.firebaseSetDoc = setDoc;
-    </script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="../assets/dist/dashboard.js" type="module"></script>
     <script>
         // 🔐 Authenticationop
         function checkDashboardAuth() {
@@ -890,80 +840,38 @@
         });
 
         // Dashboard Functionality
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', function() {
             console.log('Dashboard loaded successfully!');
             
-            // Get Firebase instances from global scope
-            const db = window.firebaseDb;
-            const collection = window.firebaseCollection;
-            const getDocs = window.firebaseGetDocs;
-            const addDoc = window.firebaseAddDoc;
-            const deleteDoc = window.firebaseDeleteDoc;
-            const doc = window.firebaseDoc;
-            const setDoc = window.firebaseSetDoc;
-            
-            // Load Data from Firebase Firestore
-            let videos = [];
-            let exams = [];
-            let notes = [];
-            let testimonials = [];
-            let materials = [];
-            
-            // Load videos from Firebase
-            try {
-                const videosSnapshot = await getDocs(collection(db, 'videos'));
-                videos = videosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Loaded videos from Firebase:', videos.length);
-            } catch (e) {
-                console.error('Error loading videos from Firebase:', e);
-            }
-            
-            // Load exams from Firebase
-            try {
-                const examsSnapshot = await getDocs(collection(db, 'exams'));
-                exams = examsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Loaded exams from Firebase:', exams.length);
-            } catch (e) {
-                console.error('Error loading exams from Firebase:', e);
-            }
-            
-            // Load notes from Firebase
-            try {
-                const notesSnapshot = await getDocs(collection(db, 'notes'));
-                notes = notesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Loaded notes from Firebase:', notes.length);
-            } catch (e) {
-                console.error('Error loading notes from Firebase:', e);
-            }
-            
-            // Load testimonials from Firebase
-            try {
-                const testimonialsSnapshot = await getDocs(collection(db, 'testimonials'));
-                testimonials = testimonialsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Loaded testimonials from Firebase:', testimonials.length);
-            } catch (e) {
-                console.error('Error loading testimonials from Firebase:', e);
-            }
-            
-            // Load materials from Firebase
-            try {
-                const materialsSnapshot = await getDocs(collection(db, 'materials'));
-                materials = materialsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Loaded materials from Firebase:', materials.length);
-            } catch (e) {
-                console.error('Error loading materials from Firebase:', e);
-            }
+            // Load Data from LocalStorage
+            let videos = JSON.parse(localStorage.getItem('videos') || '[]');
+            let exams = JSON.parse(localStorage.getItem('exams') || '[]');
+            let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+            let materials = JSON.parse(localStorage.getItem('materials') || '[]');
             
             console.log('Loaded data:', {
                 videos: videos.length,
                 exams: exams.length,
                 notes: notes.length,
-                testimonials: testimonials.length,
                 materials: materials.length
             });
             
-            // Firebase helper functions - no need for saveData anymore
-            // Data is saved directly to Firebase when adding/updating items
+            // Save to LocalStorage
+            function saveData() {
+                try {
+                    console.log('Saving data...');
+                    localStorage.setItem('videos', JSON.stringify(videos));
+                    localStorage.setItem('exams', JSON.stringify(exams));
+                    localStorage.setItem('notes', JSON.stringify(notes));
+                    localStorage.setItem('materials', JSON.stringify(materials));
+                    console.log('Data saved successfully!');
+                    return true;
+                } catch (error) {
+                    console.error('Error saving data:', error);
+                    showToast('خطأ في حفظ البيانات: ' + error.message, 'error');
+                    return false;
+                }
+            }
 
             // Modal Functions
             function createModal(title, content, onSubmit) {
@@ -1089,15 +997,12 @@
             const sidebarLinks = document.querySelectorAll('.sidebar-link');
             const sections = document.querySelectorAll('.dashboard-section');
             
-            console.log('🔗 Sidebar links found:', sidebarLinks.length);
-            console.log('📄 Sections found:', sections.length);
-            
             sidebarLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const sectionId = link.getAttribute('data-section');
                     
-                    console.log('🔄 Switching to section:', sectionId);
+                    console.log('Switching to section:', sectionId);
                     
                     sidebarLinks.forEach(l => l.classList.remove('active'));
                     link.classList.add('active');
@@ -1106,14 +1011,11 @@
                     const targetSection = document.getElementById(`${sectionId}-section`);
                     if (targetSection) {
                         targetSection.classList.add('active');
-                        console.log('✅ Section activated:', sectionId);
                         
                         // Load students when students section is opened
                         if (sectionId === 'students') {
                             loadStudents();
                         }
-                    } else {
-                        console.error('❌ Section not found:', `${sectionId}-section`);
                     }
                 });
             });
@@ -1322,6 +1224,7 @@
                             }
                             
                             const newVideo = {
+                                id: Date.now(),
                                 title,
                                 videoUrl,
                                 source,
@@ -1330,24 +1233,19 @@
                                 createdAt: new Date().toISOString()
                             };
                             
-                            console.log('Adding video to Firebase:', newVideo);
+                            console.log('Adding video:', newVideo);
+                            videos.push(newVideo);
                             
-                            // Save to Firebase
-                            return addDoc(collection(db, 'videos'), newVideo)
-                                .then((docRef) => {
-                                    newVideo.id = docRef.id;
-                                    videos.push(newVideo);
-                                    renderVideos();
-                                    updateStats();
-                                    showToast('تم إضافة الفيديو بنجاح!', 'success');
-                                    console.log('Video added successfully to Firebase');
-                                    return true;
-                                })
-                                .catch((error) => {
-                                    console.error('Failed to save video to Firebase:', error);
-                                    showToast('خطأ في حفظ الفيديو: ' + error.message, 'error');
-                                    return false;
-                                });
+                            if (saveData()) {
+                                renderVideos();
+                                updateStats();
+                                showToast('تم إضافة الفيديو بنجاح!', 'success');
+                                console.log('Video added successfully');
+                                return true;
+                            } else {
+                                console.error('Failed to save video');
+                                return false;
+                            }
                         }
                     );
                 });
@@ -1399,6 +1297,7 @@
                             }
                             
                             const newExam = {
+                                id: Date.now(),
                                 title,
                                 duration: parseInt(duration),
                                 description,
@@ -1406,24 +1305,19 @@
                                 createdAt: new Date().toISOString()
                             };
                             
-                            console.log('Adding exam to Firebase:', newExam);
+                            console.log('Adding exam:', newExam);
+                            exams.push(newExam);
                             
-                            // Save to Firebase
-                            return addDoc(collection(db, 'exams'), newExam)
-                                .then((docRef) => {
-                                    newExam.id = docRef.id;
-                                    exams.push(newExam);
-                                    renderExams();
-                                    updateStats();
-                                    showToast('تم إضافة الامتحان بنجاح!', 'success');
-                                    console.log('Exam added successfully to Firebase');
-                                    return true;
-                                })
-                                .catch((error) => {
-                                    console.error('Failed to save exam to Firebase:', error);
-                                    showToast('خطأ في حفظ الامتحان: ' + error.message, 'error');
-                                    return false;
-                                });
+                            if (saveData()) {
+                                renderExams();
+                                updateStats();
+                                showToast('تم إضافة الامتحان بنجاح!', 'success');
+                                console.log('Exam added successfully');
+                                return true;
+                            } else {
+                                console.error('Failed to save exam');
+                                return false;
+                            }
                         }
                     );
                 });
@@ -1475,110 +1369,31 @@
                             }
                             
                             const newNote = {
+                                id: Date.now(),
                                 title,
                                 content,
                                 category,
                                 createdAt: new Date().toISOString()
                             };
                             
-                            console.log('Adding note to Firebase:', newNote);
+                            console.log('Adding note:', newNote);
+                            notes.push(newNote);
                             
-                            // Save to Firebase
-                            return addDoc(collection(db, 'notes'), newNote)
-                                .then((docRef) => {
-                                    newNote.id = docRef.id;
-                                    notes.push(newNote);
-                                    renderNotes();
-                                    updateStats();
-                                    showToast('تم إضافة الملاحظة بنجاح!', 'success');
-                                    console.log('Note added successfully to Firebase');
-                                    return true;
-                                })
-                                .catch((error) => {
-                                    console.error('Failed to save note to Firebase:', error);
-                                    showToast('خطأ في حفظ الملاحظة: ' + error.message, 'error');
-                                    return false;
-                                });
+                            if (saveData()) {
+                                renderNotes();
+                                updateStats();
+                                showToast('تم إضافة الملاحظة بنجاح!', 'success');
+                                console.log('Note added successfully');
+                                return true;
+                            } else {
+                                console.error('Failed to save note');
+                                return false;
+                            }
                         }
                     );
                 });
             } else {
                 console.error('Add Note Button not found!');
-            }
-
-            // Add Testimonial Button
-            const addTestimonialBtn = document.getElementById('addTestimonialBtn');
-            if (addTestimonialBtn) {
-                console.log('Add Testimonial Button found');
-                addTestimonialBtn.addEventListener('click', function() {
-                    console.log('Add Testimonial button clicked');
-                    createModal(
-                        'إضافة رأي طالب',
-                        `
-                        <form id="testimonialForm">
-                            <div class="form-group">
-                                <label class="form-label">اسم الطالب</label>
-                                <input type="text" class="form-input" id="studentName" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">الرأي</label>
-                                <textarea class="form-textarea" id="testimonialComment" rows="4" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">التقييم</label>
-                                <select class="form-select" id="testimonialRating" required>
-                                    <option value="">اختر التقييم</option>
-                                    <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-                                    <option value="4">⭐⭐⭐⭐ (4/5)</option>
-                                    <option value="3">⭐⭐⭐ (3/5)</option>
-                                    <option value="2">⭐⭐ (2/5)</option>
-                                    <option value="1">⭐ (1/5)</option>
-                                </select>
-                            </div>
-                        </form>
-                        `,
-                        () => {
-                            console.log('Processing testimonial form...');
-                            const studentName = document.getElementById('studentName').value.trim();
-                            const comment = document.getElementById('testimonialComment').value.trim();
-                            const rating = document.getElementById('testimonialRating').value;
-                            
-                            console.log('📋 Form data:', { studentName, comment, rating });
-                            
-                            if (!studentName || !comment || !rating) {
-                                showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
-                                return false;
-                            }
-                            
-                            const newTestimonial = {
-                                studentName,
-                                comment,
-                                rating: parseInt(rating),
-                                createdAt: new Date().toISOString()
-                            };
-                            
-                            console.log('Adding testimonial to Firebase:', newTestimonial);
-                            
-                            // Save to Firebase
-                            return addDoc(collection(db, 'testimonials'), newTestimonial)
-                                .then((docRef) => {
-                                    newTestimonial.id = docRef.id;
-                                    testimonials.push(newTestimonial);
-                                    renderTestimonials();
-                                    showToast('تم إضافة رأي الطالب بنجاح!', 'success');
-                                    console.log('Testimonial added successfully to Firebase');
-                                    return true;
-                                })
-                                .catch((error) => {
-                                    console.error('Failed to save testimonial to Firebase:', error);
-                                    showToast('خطأ في حفظ الرأي: ' + error.message, 'error');
-                                    return false;
-                                });
-                        }
-                    );
-                });
-            } else {
-                console.error('Add Testimonial Button not found!');
             }
 
             // Add Material Button
@@ -1664,6 +1479,7 @@
                                     const reader = new FileReader();
                                     reader.onload = function(e) {
                                         const newMaterial = {
+                                            id: Date.now(),
                                             title,
                                             grade,
                                             source,
@@ -1674,20 +1490,15 @@
                                             createdAt: new Date().toISOString()
                                         };
                                         
-                                        // Save to Firebase
-                                        addDoc(collection(db, 'materials'), newMaterial)
-                                            .then((docRef) => {
-                                                newMaterial.id = docRef.id;
-                                                materials.push(newMaterial);
-                                                renderMaterials();
-                                                showToast('تم إضافة المذكرة بنجاح!', 'success');
-                                                resolve(true);
-                                            })
-                                            .catch((error) => {
-                                                console.error('Failed to save material to Firebase:', error);
-                                                showToast('خطأ في حفظ المذكرة: ' + error.message, 'error');
-                                                resolve(false);
-                                            });
+                                        materials.push(newMaterial);
+                                        
+                                        if (saveData()) {
+                                            renderMaterials();
+                                            showToast('تم إضافة المذكرة بنجاح!', 'success');
+                                            resolve(true);
+                                        } else {
+                                            resolve(false);
+                                        }
                                     };
                                     reader.readAsDataURL(file);
                                 });
@@ -1702,6 +1513,7 @@
                                 fileSize = 'غير محدد';
                                 
                                 const newMaterial = {
+                                    id: Date.now(),
                                     title,
                                     grade,
                                     source,
@@ -1712,20 +1524,15 @@
                                     createdAt: new Date().toISOString()
                                 };
                                 
-                                // Save to Firebase
-                                return addDoc(collection(db, 'materials'), newMaterial)
-                                    .then((docRef) => {
-                                        newMaterial.id = docRef.id;
-                                        materials.push(newMaterial);
-                                        renderMaterials();
-                                        showToast('تم إضافة المذكرة بنجاح!', 'success');
-                                        return true;
-                                    })
-                                    .catch((error) => {
-                                        console.error('Failed to save material to Firebase:', error);
-                                        showToast('خطأ في حفظ المذكرة: ' + error.message, 'error');
-                                        return false;
-                                    });
+                                materials.push(newMaterial);
+                                
+                                if (saveData()) {
+                                    renderMaterials();
+                                    showToast('تم إضافة المذكرة بنجاح!', 'success');
+                                    return true;
+                                } else {
+                                    return false;
+                                }
                             }
                         }
                     );
@@ -1780,7 +1587,7 @@
                         <div class="content-item-header">
                             <h3 class="content-item-title">${note.title}</h3>
                             <div class="content-item-actions">
-                                <button class="btn btn-sm btn-danger" onclick="deleteNote('${note.id}')">🗑️ حذف</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteNote(${note.id})">🗑️ حذف</button>
                             </div>
                         </div>
                         <p style="color: #94a3b8; margin-top: 0.5rem;">${note.content}</p>
@@ -1789,35 +1596,6 @@
                 `).join('');
                 
                 console.log('Notes rendered:', notes.length);
-            }
-
-            function renderTestimonials() {
-                console.log('Rendering testimonials...');
-                const testimonialsList = document.getElementById('testimonialsList');
-                if (!testimonialsList) {
-                    console.error('Testimonials list element not found!');
-                    return;
-                }
-                
-                if (testimonials.length === 0) {
-                    testimonialsList.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">لا توجد آراء حالياً</p>';
-                    return;
-                }
-                
-                testimonialsList.innerHTML = testimonials.map(testimonial => `
-                    <div class="content-item">
-                        <div class="content-item-header">
-                            <h3 class="content-item-title">${testimonial.studentName}</h3>
-                            <div class="content-item-actions">
-                                <button class="btn btn-sm btn-danger" onclick="deleteTestimonial('${testimonial.id}')">🗑️ حذف</button>
-                            </div>
-                        </div>
-                        <p style="color: #94a3b8; margin-top: 0.5rem;">${testimonial.comment}</p>
-                        <p style="color: #fbbf24; font-size: 1.2rem; margin-top: 0.5rem;">${'⭐'.repeat(testimonial.rating)}</p>
-                    </div>
-                `).join('');
-                
-                console.log('Testimonials rendered:', testimonials.length);
             }
 
             function renderMaterials() {
@@ -1848,7 +1626,7 @@
                                 <h3 class="content-item-title">📚 ${material.title}</h3>
                                 <div class="content-item-actions">
                                     <button class="btn btn-sm btn-primary" onclick="window.open('${material.fileUrl}', '_blank')">📄 عرض</button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteMaterial('${material.id}')">🗑️ حذف</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteMaterial(${material.id})">🗑️ حذف</button>
                                 </div>
                             </div>
                             <p style="color: #94a3b8; margin-top: 0.5rem;">${material.description || 'لا يوجد وصف'}</p>
@@ -1881,7 +1659,7 @@
                             <h3 class="content-item-title">🎥 ${video.title}</h3>
                             <div class="content-item-actions">
                                 <button class="btn btn-sm btn-primary" onclick="window.open('${video.videoUrl}', '_blank')">▶️ عرض</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteVideo('${video.id}')">🗑️ حذف</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteVideo(${video.id})">🗑️ حذف</button>
                             </div>
                         </div>
                         ${video.notes ? `<p style="color: #94a3b8; margin-top: 0.5rem;">${video.notes}</p>` : ''}
@@ -1911,7 +1689,7 @@
                             <h3 class="content-item-title">📋 ${exam.title}</h3>
                             <div class="content-item-actions">
                                 <button class="btn btn-sm btn-primary" onclick="window.open('${exam.examUrl}', '_blank')">📝 فتح الامتحان</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteExam('${exam.id}')">🗑️ حذف</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteExam(${exam.id})">🗑️ حذف</button>
                             </div>
                         </div>
                         ${exam.description ? `<p style="color: #94a3b8; margin-top: 0.5rem;">${exam.description}</p>` : ''}
@@ -1933,45 +1711,33 @@
 
             // Delete Functions
             window.deleteVideo = function(id) {
-                console.log('Deleting video from Firebase:', id);
+                console.log('Deleting video:', id);
                 createConfirmModal(
                     'حذف الفيديو',
                     'هل أنت متأكد من حذف هذا الفيديو؟',
                     () => {
-                        deleteDoc(doc(db, 'videos', id))
-                            .then(() => {
-                                videos = videos.filter(v => v.id !== id);
-                                renderVideos();
-                                updateStats();
-                                showToast('تم حذف الفيديو بنجاح!', 'success');
-                                console.log('Video deleted from Firebase');
-                            })
-                            .catch((error) => {
-                                console.error('Error deleting video:', error);
-                                showToast('خطأ في حذف الفيديو: ' + error.message, 'error');
-                            });
+                        videos = videos.filter(v => v.id !== id);
+                        saveData();
+                        renderVideos();
+                        updateStats();
+                        showToast('تم حذف الفيديو بنجاح!', 'success');
+                        console.log('Video deleted');
                     }
                 );
             };
 
             window.deleteExam = function(id) {
-                console.log('Deleting exam from Firebase:', id);
+                console.log('Deleting exam:', id);
                 createConfirmModal(
                     'حذف الامتحان',
                     'هل أنت متأكد من حذف هذا الامتحان؟',
                     () => {
-                        deleteDoc(doc(db, 'exams', id))
-                            .then(() => {
-                                exams = exams.filter(e => e.id !== id);
-                                renderExams();
-                                updateStats();
-                                showToast('تم حذف الامتحان بنجاح!', 'success');
-                                console.log('Exam deleted from Firebase');
-                            })
-                            .catch((error) => {
-                                console.error('Error deleting exam:', error);
-                                showToast('خطأ في حذف الامتحان: ' + error.message, 'error');
-                            });
+                        exams = exams.filter(e => e.id !== id);
+                        saveData();
+                        renderExams();
+                        updateStats();
+                        showToast('تم حذف الامتحان بنجاح!', 'success');
+                        console.log('Exam deleted');
                     }
                 );
             };
@@ -1979,65 +1745,32 @@
 
 
             window.deleteNote = function(id) {
-                console.log('Deleting note from Firebase:', id);
+                console.log('Deleting note:', id);
                 createConfirmModal(
                     'حذف الملاحظة',
                     'هل أنت متأكد من حذف هذه الملاحظة؟',
                     () => {
-                        deleteDoc(doc(db, 'notes', id))
-                            .then(() => {
-                                notes = notes.filter(n => n.id !== id);
-                                renderNotes();
-                                updateStats();
-                                showToast('تم حذف الملاحظة بنجاح!', 'success');
-                                console.log('Note deleted from Firebase');
-                            })
-                            .catch((error) => {
-                                console.error('Error deleting note:', error);
-                                showToast('خطأ في حذف الملاحظة: ' + error.message, 'error');
-                            });
-                    }
-                );
-            };
-
-            window.deleteTestimonial = function(id) {
-                console.log('Deleting testimonial from Firebase:', id);
-                createConfirmModal(
-                    'حذف الرأي',
-                    'هل أنت متأكد من حذف هذا الرأي؟',
-                    () => {
-                        deleteDoc(doc(db, 'testimonials', id))
-                            .then(() => {
-                                testimonials = testimonials.filter(t => t.id !== id);
-                                renderTestimonials();
-                                showToast('تم حذف الرأي بنجاح!', 'success');
-                                console.log('Testimonial deleted from Firebase');
-                            })
-                            .catch((error) => {
-                                console.error('Error deleting testimonial:', error);
-                                showToast('خطأ في حذف الرأي: ' + error.message, 'error');
-                            });
+                        notes = notes.filter(n => n.id !== id);
+                        saveData();
+                        renderNotes();
+                        updateStats();
+                        showToast('تم حذف الملاحظة بنجاح!', 'success');
+                        console.log('Note deleted');
                     }
                 );
             };
 
             window.deleteMaterial = function(id) {
-                console.log('Deleting material from Firebase:', id);
+                console.log('Deleting material:', id);
                 createConfirmModal(
                     'حذف المذكرة',
                     'هل أنت متأكد من حذف هذه المذكرة؟',
                     () => {
-                        deleteDoc(doc(db, 'materials', id))
-                            .then(() => {
-                                materials = materials.filter(m => m.id !== id);
-                                renderMaterials();
-                                showToast('تم حذف المذكرة بنجاح!', 'success');
-                                console.log('Material deleted from Firebase');
-                            })
-                            .catch((error) => {
-                                console.error('Error deleting material:', error);
-                                showToast('خطأ في حذف المذكرة: ' + error.message, 'error');
-                            });
+                        materials = materials.filter(m => m.id !== id);
+                        saveData();
+                        renderMaterials();
+                        showToast('تم حذف المذكرة بنجاح!', 'success');
+                        console.log('Material deleted');
                     }
                 );
             };
@@ -2047,23 +1780,19 @@
             renderVideos();
             renderExams();
             renderNotes();
-            renderTestimonials();
             renderMaterials();
             updateStats();
             
             // Test buttons after a short delay
             setTimeout(() => {
-                const testimonialBtn = document.getElementById('addTestimonialBtn');
                 const noteBtn = document.getElementById('addNoteBtn');
                 const materialBtn = document.getElementById('addMaterialBtn');
                 
                 console.log('Button status check:', {
-                    testimonialBtn: !!testimonialBtn,
                     noteBtn: !!noteBtn,
                     materialBtn: !!materialBtn
                 });
                 
-                if (!testimonialBtn) console.error('Testimonial button missing!');
                 if (!noteBtn) console.error('Note button missing!');
                 if (!materialBtn) console.error('Material button missing!');
             }, 1000);

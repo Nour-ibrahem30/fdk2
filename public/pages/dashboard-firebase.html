@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | منصة الفيلسوف التعليمية</title>
+    
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/pages_style/dashboard.css">
+    
+    <style>
+        /* Dashboard Styles */
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f1f5f9;
+            font-family: 'Cairo', sans-serif;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 2rem;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .dashboard-sidebar {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+            color: #f1f5f9;
+            transform: translateX(-4px);
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border-color: #3b82f6;
+            color: #f1f5f9;
+        }
+
+        /* Main Content */
+        .dashboard-main {
+            background: rgba(15, 23, 42, 0.3);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .dashboard-section {
+            display: none;
+        }
+
+        .dashboard-section.active {
+            display: block;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.8));
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            border-color: #3b82f6;
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.4);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #f1f5f9;
+            font-weight: 500;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            color: #f1f5f9;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        /* Content List */
+        .content-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .content-item {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.6));
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.4s ease;
+        }
+
+        .content-item:hover {
+            border-color: #3b82f6;
+            transform: translateX(-8px);
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .toast-success { border-left-color: #10b981; }
+        .toast-error { border-left-color: #ef4444; }
+        .toast-warning { border-left-color: #f59e0b; }
+        .toast-info { border-left-color: #3b82f6; }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-link active" data-section="overview">
+                    <span>📊</span>
+                    <span>نظرة عامة</span>
+                </a>
+                <a href="#" class="sidebar-link" data-section="videos">
+                    <span>🎥</span>
+                    <span>إدارة الفيديوهات</span>
+                </a>
+                <a href="#" class="sidebar-link" data-section="exams">
+                    <span>📋</span>
+                    <span>إدارة الامتحانات</span>
+                </a>
+                <a href="#" class="sidebar-link" data-section="notes">
+                    <span>📝</span>
+                    <span>إدارة الملاحظات</span>
+                </a>
+                <a href="#" class="sidebar-link" data-section="materials">
+                    <span>📚</span>
+                    <span>إدارة المذكرات</span>
+                </a>
+                <a href="#" class="sidebar-link" data-section="testimonials">
+                    <span>💬</span>
+                    <span>إدارة الآراء</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Overview Section -->
+            <section id="overview-section" class="dashboard-section active">
+                <h1 style="font-size: 2rem; margin-bottom: 2rem;">نظرة عامة</h1>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalVideos">0</div>
+                        <div class="stat-label">فيديو</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalExams">0</div>
+                        <div class="stat-label">امتحان</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalNotes">0</div>
+                        <div class="stat-label">ملاحظة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalMaterials">0</div>
+                        <div class="stat-label">مذكرة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalStudents">0</div>
+                        <div class="stat-label">طالب</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Videos Section -->
+            <section id="videos-section" class="dashboard-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h1 style="font-size: 2rem;">إدارة الفيديوهات</h1>
+                    <button class="btn btn-primary" id="addVideoBtn">➕ إضافة فيديو</button>
+                </div>
+                <div id="videosList" class="content-list"></div>
+            </section>
+
+            <!-- Exams Section -->
+            <section id="exams-section" class="dashboard-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h1 style="font-size: 2rem;">إدارة الامتحانات</h1>
+                    <button class="btn btn-primary" id="addExamBtn">➕ إضافة امتحان</button>
+                </div>
+                <div id="examsList" class="content-list"></div>
+            </section>
+
+            <!-- Notes Section -->
+            <section id="notes-section" class="dashboard-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h1 style="font-size: 2rem;">إدارة الملاحظات</h1>
+                    <button class="btn btn-primary" id="addNoteBtn">➕ إضافة ملاحظة</button>
+                </div>
+                <div id="notesList" class="content-list"></div>
+            </section>
+
+            <!-- Materials Section -->
+            <section id="materials-section" class="dashboard-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h1 style="font-size: 2rem;">إدارة المذكرات</h1>
+                    <button class="btn btn-primary" id="addMaterialBtn">➕ إضافة مذكرة</button>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                    <button class="btn btn-primary grade-tab active" data-grade="1">الصف الأول</button>
+                    <button class="btn btn-primary grade-tab" data-grade="2">الصف الثاني</button>
+                    <button class="btn btn-primary grade-tab" data-grade="3">الصف الثالث</button>
+                </div>
+                
+                <div id="materialsGrade1" class="materials-content active"></div>
+                <div id="materialsGrade2" class="materials-content" style="display: none;"></div>
+                <div id="materialsGrade3" class="materials-content" style="display: none;"></div>
+            </section>
+
+            <!-- Testimonials Section -->
+            <section id="testimonials-section" class="dashboard-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h1 style="font-size: 2rem;">إدارة الآراء</h1>
+                    <button class="btn btn-primary" id="addTestimonialBtn">➕ إضافة رأي</button>
+                </div>
+                <div id="testimonialsList" class="content-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            getDocs, 
+            doc, 
+            updateDoc, 
+            deleteDoc,
+            query,
+            where,
+            orderBy,
+            serverTimestamp 
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { 
+            getStorage, 
+            ref as storageRef, 
+            uploadBytes, 
+            getDownloadURL 
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+
+        // Firebase Configuration (استبدل بالبيانات الحقيقية)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+
+        // Check Authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                showToast('يجب تسجيل الدخول أولاً', 'warning');
+                setTimeout(() => window.location.href = '/pages/login.html', 2000);
+                return;
+            }
+
+            currentUser = user;
+            
+            // Check if teacher
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, where('uid', '==', user.uid));
+            const snapshot = await getDocs(q);
+            
+            if (snapshot.empty || snapshot.docs[0].data().role !== 'teacher') {
+                showToast('هذه الصفحة مخصصة للمدرسين فقط', 'error');
+                setTimeout(() => window.location.href = '/pages/profile.html', 2000);
+                return;
+            }
+
+            // Load dashboard data
+            loadDashboard();
+        });
+
+        // Toast Notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Load Dashboard
+        async function loadDashboard() {
+            try {
+                await Promise.all([
+                    loadStats(),
+                    loadVideos(),
+                    loadExams(),
+                    loadNotes(),
+                    loadMaterials(),
+                    loadTestimonials()
+                ]);
+                
+                showToast('تم تحميل البيانات بنجاح', 'success');
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showToast('حدث خطأ في تحميل البيانات', 'error');
+            }
+        }
+
+        // Load Statistics
+        async function loadStats() {
+            const [videos, exams, notes, materials, students] = await Promise.all([
+                getDocs(collection(db, 'videos')),
+                getDocs(collection(db, 'exams')),
+                getDocs(collection(db, 'notes')),
+                getDocs(collection(db, 'materials')),
+                getDocs(query(collection(db, 'users'), where('role', '==', 'student')))
+            ]);
+
+            document.getElementById('totalVideos').textContent = videos.size;
+            document.getElementById('totalExams').textContent = exams.size;
+            document.getElementById('totalNotes').textContent = notes.size;
+            document.getElementById('totalMaterials').textContent = materials.size;
+            document.getElementById('totalStudents').textContent = students.size;
+        }
+
+        // Load Videos
+        async function loadVideos() {
+            const snapshot = await getDocs(query(collection(db, 'videos'), orderBy('createdAt', 'desc')));
+            const videosList = document.getElementById('videosList');
+            
+            if (snapshot.empty) {
+                videosList.innerHTML = '<p style="text-align: center; color: #94a3b8;">لا توجد فيديوهات</p>';
+                return;
+            }
+
+            videosList.innerHTML = '';
+            snapshot.forEach(doc => {
+                const video = doc.data();
+                const item = document.createElement('div');
+                item.className = 'content-item';
+                item.innerHTML = `
+                    <h3>${video.title}</h3>
+                    <p style="color: #94a3b8;">${video.description}</p>
+                    <p style="color: #64748b; font-size: 0.875rem;">الصف: ${video.grade}</p>
+                    <button class="btn btn-danger" onclick="deleteVideo('${doc.id}')">🗑️ حذف</button>
+                `;
+                videosList.appendChild(item);
+            });
+        }
+
+        // Similar functions for exams, notes, materials, testimonials...
+        // (سيتم إضافتها في الملف الكامل)
+
+        // Sidebar Navigation
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = link.dataset.section;
+                
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
+                document.getElementById(`${section}-section`).classList.add('active');
+            });
+        });
+
+        // Make functions global
+        window.deleteVideo = async (id) => {
+            if (confirm('هل أنت متأكد من الحذف؟')) {
+                await deleteDoc(doc(db, 'videos', id));
+                await loadVideos();
+                await loadStats();
+                showToast('تم الحذف بنجاح', 'success');
+            }
+        };
+    </script>
+
+    <script src="../assets/js/components-loader.js"></script>
+</body>
+</html>

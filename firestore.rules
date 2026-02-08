@@ -30,6 +30,12 @@ service cloud.firestore {
       allow write: if isTeacher();
     }
     
+    // Videos collection (same as lessons)
+    match /videos/{videoId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+    
     // Exams collection
     match /exams/{examId} {
       allow read: if isAuthenticated();
@@ -53,6 +59,12 @@ service cloud.firestore {
     // Materials collection
     match /materials/{materialId} {
       allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+    
+    // Testimonials collection
+    match /testimonials/{testimonialId} {
+      allow read: if true; // Public read for testimonials
       allow write: if isTeacher();
     }
     

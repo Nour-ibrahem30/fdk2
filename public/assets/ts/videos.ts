@@ -17,45 +17,47 @@ const authBtn = document.getElementById('authBtn') as HTMLAnchorElement;
 const emptyState = document.getElementById('emptyState') as HTMLElement;
 
 async function loadVideos() {
-    if (!videosGrid) return;
+  if (!videosGrid) {
+    return;
+  }
 
-    try {
-        videosGrid.innerHTML = '<div class="loading"><div class="spinner"></div><span>جاري تحميل الفيديوهات...</span></div>';
+  try {
+    videosGrid.innerHTML = '<div class="loading"><div class="spinner"></div><span>جاري تحميل الفيديوهات...</span></div>';
 
-        const videosQuery = query(collection(db, 'lessons'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(videosQuery);
+    const videosQuery = query(collection(db, 'lessons'), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(videosQuery);
 
-        if (snapshot.empty) {
-            videosGrid.style.display = 'none';
-            emptyState.style.display = 'flex';
-            return;
-        }
-
-        videosGrid.innerHTML = '';
-        videosGrid.style.display = 'grid';
-        emptyState.style.display = 'none';
-
-        snapshot.forEach((docSnap) => {
-            const video = { id: docSnap.id, ...docSnap.data() } as Lesson;
-            const card = createVideoCard(video);
-            videosGrid.appendChild(card);
-        });
-
-    } catch (error) {
-        console.error('Error loading videos:', error);
-        videosGrid.innerHTML = '<div class="error-state"><p>حدث خطأ أثناء تحميل الفيديوهات</p></div>';
+    if (snapshot.empty) {
+      videosGrid.style.display = 'none';
+      emptyState.style.display = 'flex';
+      return;
     }
+
+    videosGrid.innerHTML = '';
+    videosGrid.style.display = 'grid';
+    emptyState.style.display = 'none';
+
+    snapshot.forEach((docSnap) => {
+      const video = { id: docSnap.id, ...docSnap.data() } as Lesson;
+      const card = createVideoCard(video);
+      videosGrid.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error('Error loading videos:', error);
+    videosGrid.innerHTML = '<div class="error-state"><p>حدث خطأ أثناء تحميل الفيديوهات</p></div>';
+  }
 }
 
 function createVideoCard(video: Lesson): HTMLElement {
-    const card = document.createElement('article');
-    card.className = 'video-card';
-    card.setAttribute('role', 'listitem');
+  const card = document.createElement('article');
+  card.className = 'video-card';
+  card.setAttribute('role', 'listitem');
 
-    const thumbnailUrl = getYoutubeThumbnail(video.videoUrl);
-    const duration = video.duration ? formatDuration(video.duration) : '';
+  const thumbnailUrl = getYoutubeThumbnail(video.videoUrl);
+  const duration = video.duration ? formatDuration(video.duration) : '';
 
-    card.innerHTML = `
+  card.innerHTML = `
     <div class="video-thumbnail">
       <img src="${thumbnailUrl}" alt="${video.title}" loading="lazy">
       ${duration ? `<span class="video-duration">${duration}</span>` : ''}
@@ -69,61 +71,61 @@ function createVideoCard(video: Lesson): HTMLElement {
     </div>
   `;
 
-    const watchBtn = card.querySelector('.watch-btn') as HTMLButtonElement;
-    watchBtn.addEventListener('click', () => handleWatchVideo(video));
+  const watchBtn = card.querySelector('.watch-btn') as HTMLButtonElement;
+  watchBtn.addEventListener('click', () => handleWatchVideo(video));
 
-    return card;
+  return card;
 }
 
 function getYoutubeThumbnail(url: string): string {
-    const videoId = extractYoutubeId(url);
-    return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '/assets/images/video-placeholder.jpg';
+  const videoId = extractYoutubeId(url);
+  return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : '/assets/images/video-placeholder.jpg';
 }
 
 function extractYoutubeId(url: string): string | null {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
 }
 
 function formatDuration(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 async function handleWatchVideo(video: Lesson) {
-    if (!currentUser) {
-        (window as any).showToast('يجب تسجيل الدخول لمشاهدة الفيديوهات', 'warning');
-        setTimeout(() => {
-            window.location.href = '/login.html';
-        }, 2000);
-        return;
-    }
+  if (!currentUser) {
+    (window as any).showToast('يجب تسجيل الدخول لمشاهدة الفيديوهات', 'warning');
+    setTimeout(() => {
+      window.location.href = '/login.html';
+    }, 2000);
+    return;
+  }
 
-    showVideoModal(video);
+  showVideoModal(video);
 
-    try {
-        const progressRef = doc(db, 'progress', `${currentUser.uid}_${video.courseId}`);
-        await updateDoc(progressRef, {
-            lessonsCompleted: arrayUnion(video.id),
-            lastAccessed: new Date().toISOString()
-        });
-    } catch (error) {
-        console.error('Error updating progress:', error);
-    }
+  try {
+    const progressRef = doc(db, 'progress', `${currentUser.uid}_${video.courseId}`);
+    await updateDoc(progressRef, {
+      lessonsCompleted: arrayUnion(video.id),
+      lastAccessed: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error updating progress:', error);
+  }
 }
 
 function showVideoModal(video: Lesson) {
-    const modal = document.createElement('div');
-    modal.className = 'modal active';
-    modal.setAttribute('role', 'dialog');
-    modal.setAttribute('aria-labelledby', 'modal-title');
+  const modal = document.createElement('div');
+  modal.className = 'modal active';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-labelledby', 'modal-title');
 
-    const videoId = extractYoutubeId(video.videoUrl);
-    const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : video.videoUrl;
+  const videoId = extractYoutubeId(video.videoUrl);
+  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : video.videoUrl;
 
-    modal.innerHTML = `
+  modal.innerHTML = `
     <div class="modal-overlay"></div>
     <div class="modal-content modal-video">
       <button class="modal-close" aria-label="إغلاق">&times;</button>
@@ -141,52 +143,52 @@ function showVideoModal(video: Lesson) {
     </div>
   `;
 
-    document.body.appendChild(modal);
+  document.body.appendChild(modal);
 
-    const closeBtn = modal.querySelector('.modal-close') as HTMLButtonElement;
-    const overlay = modal.querySelector('.modal-overlay') as HTMLElement;
+  const closeBtn = modal.querySelector('.modal-close') as HTMLButtonElement;
+  const overlay = modal.querySelector('.modal-overlay') as HTMLElement;
 
-    closeBtn.addEventListener('click', () => modal.remove());
-    overlay.addEventListener('click', () => modal.remove());
+  closeBtn.addEventListener('click', () => modal.remove());
+  overlay.addEventListener('click', () => modal.remove());
 }
 
 searchInput?.addEventListener('input', (e) => {
-    const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
-    const cards = videosGrid.querySelectorAll('.video-card');
+  const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
+  const cards = videosGrid.querySelectorAll('.video-card');
 
-    cards.forEach((card) => {
-        const title = card.querySelector('.video-title')?.textContent?.toLowerCase() || '';
-        card.classList.toggle('hidden', !title.includes(searchTerm));
-    });
+  cards.forEach((card) => {
+    const title = card.querySelector('.video-title')?.textContent?.toLowerCase() || '';
+    card.classList.toggle('hidden', !title.includes(searchTerm));
+  });
 });
 
 sortSelect?.addEventListener('change', (e) => {
-    const sortValue = (e.target as HTMLSelectElement).value;
-    const cards = Array.from(videosGrid.querySelectorAll('.video-card'));
+  const sortValue = (e.target as HTMLSelectElement).value;
+  const cards = Array.from(videosGrid.querySelectorAll('.video-card'));
 
-    cards.sort((a, b) => {
-        const titleA = a.querySelector('.video-title')?.textContent || '';
-        const titleB = b.querySelector('.video-title')?.textContent || '';
+  cards.sort((a, b) => {
+    const titleA = a.querySelector('.video-title')?.textContent || '';
+    const titleB = b.querySelector('.video-title')?.textContent || '';
 
-        if (sortValue === 'title') {
-            return titleA.localeCompare(titleB, 'ar');
-        }
-        return 0;
-    });
+    if (sortValue === 'title') {
+      return titleA.localeCompare(titleB, 'ar');
+    }
+    return 0;
+  });
 
-    videosGrid.innerHTML = '';
-    cards.forEach(card => videosGrid.appendChild(card));
+  videosGrid.innerHTML = '';
+  cards.forEach(card => videosGrid.appendChild(card));
 });
 
 onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-            currentUser = userDoc.data() as User;
-            authBtn.textContent = 'الملف الشخصي';
-            authBtn.href = currentUser.role === 'teacher' ? '/dashboard.html' : '/profile.html';
-        }
+  if (user) {
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    if (userDoc.exists()) {
+      currentUser = userDoc.data() as User;
+      authBtn.textContent = 'الملف الشخصي';
+      authBtn.href = currentUser.role === 'teacher' ? '/dashboard.html' : '/profile.html';
     }
+  }
 });
 
 document.addEventListener('DOMContentLoaded', loadVideos);

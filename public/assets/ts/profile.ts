@@ -1,11 +1,11 @@
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBmJJ5_wZ8X9QX9X9X9X9X9X9X9X9X9X9X",
-  authDomain: "philosopher-platform.firebaseapp.com",
-  projectId: "philosopher-platform",
-  storageBucket: "philosopher-platform.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:65ef9206be0"
+  apiKey: 'AIzaSyBmJJ5_wZ8X9QX9X9X9X9X9X9X9X9X9X9X',
+  authDomain: 'philosopher-platform.firebaseapp.com',
+  projectId: 'philosopher-platform',
+  storageBucket: 'philosopher-platform.appspot.com',
+  messagingSenderId: '123456789012',
+  appId: '1:123456789012:web:65ef9206be0'
 };
 
 // Firebase variables
@@ -148,9 +148,15 @@ function updateProfileUI(name: string, email: string) {
       const emailEl = document.getElementById('userEmail');
       const initialsEl = document.getElementById('userInitials');
 
-      if (nameEl) nameEl.textContent = name;
-      if (emailEl) emailEl.textContent = email;
-      if (initialsEl) initialsEl.textContent = generateInitials(name);
+      if (nameEl) {
+        nameEl.textContent = name;
+      }
+      if (emailEl) {
+        emailEl.textContent = email;
+      }
+      if (initialsEl) {
+        initialsEl.textContent = generateInitials(name);
+      }
     }, delay);
   });
 }
@@ -159,7 +165,9 @@ function updateProfileUI(name: string, email: string) {
 async function checkAuth(): Promise<void> {
   return new Promise((resolve) => {
     const checkInterval = setInterval(() => {
-      if (!auth) return;
+      if (!auth) {
+        return;
+      }
       clearInterval(checkInterval);
 
       auth.onAuthStateChanged(async (user: any) => {
@@ -208,7 +216,7 @@ async function checkAuth(): Promise<void> {
               email: user.email || '',
               role: 'student',
               createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
             };
 
             await (window as any).firebase.firestore.setDoc(userRef, newUser);
@@ -239,7 +247,9 @@ async function checkAuth(): Promise<void> {
 
 // Data Loading
 async function loadProgress() {
-  if (!currentUser) return;
+  if (!currentUser) {
+    return;
+  }
   
   const completedVideos = 5, totalVideos = 20;
   const completedExams = 3, totalExams = 10;
@@ -259,27 +269,51 @@ async function loadProgress() {
     examProgressBar: document.getElementById('examProgressBar')
   };
   
-  if (elements.completedVideos) elements.completedVideos.textContent = completedVideos.toString();
-  if (elements.completedExams) elements.completedExams.textContent = completedExams.toString();
-  if (elements.totalVideosCount) elements.totalVideosCount.textContent = totalVideos.toString();
-  if (elements.totalExamsCount) elements.totalExamsCount.textContent = totalExams.toString();
-  if (elements.watchedVideos) elements.watchedVideos.textContent = completedVideos.toString();
-  if (elements.passedExams) elements.passedExams.textContent = completedExams.toString();
-  if (elements.totalTodos) elements.totalTodos.textContent = activeTodos.toString();
+  if (elements.completedVideos) {
+    elements.completedVideos.textContent = completedVideos.toString();
+  }
+  if (elements.completedExams) {
+    elements.completedExams.textContent = completedExams.toString();
+  }
+  if (elements.totalVideosCount) {
+    elements.totalVideosCount.textContent = totalVideos.toString();
+  }
+  if (elements.totalExamsCount) {
+    elements.totalExamsCount.textContent = totalExams.toString();
+  }
+  if (elements.watchedVideos) {
+    elements.watchedVideos.textContent = completedVideos.toString();
+  }
+  if (elements.passedExams) {
+    elements.passedExams.textContent = completedExams.toString();
+  }
+  if (elements.totalTodos) {
+    elements.totalTodos.textContent = activeTodos.toString();
+  }
   
   const videoProgress = Math.round((completedVideos / totalVideos) * 100);
   const examProgress = Math.round((completedExams / totalExams) * 100);
   
-  if (elements.videoProgress) elements.videoProgress.textContent = videoProgress + '%';
-  if (elements.examProgress) elements.examProgress.textContent = examProgress + '%';
+  if (elements.videoProgress) {
+    elements.videoProgress.textContent = videoProgress + '%';
+  }
+  if (elements.examProgress) {
+    elements.examProgress.textContent = examProgress + '%';
+  }
   
-  if (elements.videoProgressBar) (elements.videoProgressBar as HTMLElement).style.width = videoProgress + '%';
-  if (elements.examProgressBar) (elements.examProgressBar as HTMLElement).style.width = examProgress + '%';
+  if (elements.videoProgressBar) {
+    (elements.videoProgressBar as HTMLElement).style.width = videoProgress + '%';
+  }
+  if (elements.examProgressBar) {
+    (elements.examProgressBar as HTMLElement).style.width = examProgress + '%';
+  }
 }
 
 function loadTodos() {
   const todoList = document.getElementById('todoList');
-  if (!todoList) return;
+  if (!todoList) {
+    return;
+  }
   
   todoList.innerHTML = '';
   
@@ -312,7 +346,9 @@ function loadTodos() {
 
 function loadExamResults() {
   const container = document.getElementById('examResults');
-  if (!container) return;
+  if (!container) {
+    return;
+  }
   
   const sampleResults = [
     { title: 'امتحان الرياضيات', score: 85, total: 100, date: '2024-02-10' },
@@ -351,7 +387,9 @@ function loadExamResults() {
 
 function loadAchievements() {
   const container = document.getElementById('achievementsList');
-  if (!container) return;
+  if (!container) {
+    return;
+  }
   
   const achievements = [
     { title: 'أول خطوة', description: 'شاهد أول فيديو تعليمي', icon: '🎬', unlocked: true, progress: 100 },
@@ -516,9 +554,13 @@ function switchTab(tabName: string) {
     }
   });
   
-  if (tabName === 'todos') loadTodos();
-  else if (tabName === 'results') loadExamResults();
-  else if (tabName === 'achievements') loadAchievements();
+  if (tabName === 'todos') {
+    loadTodos();
+  } else if (tabName === 'results') {
+    loadExamResults();
+  } else if (tabName === 'achievements') {
+    loadAchievements();
+  }
 }
 
 // Event Listeners
@@ -527,7 +569,9 @@ function initializeEventListeners() {
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const tabName = btn.getAttribute('data-tab');
-      if (tabName) switchTab(tabName);
+      if (tabName) {
+        switchTab(tabName);
+      }
     });
   });
   

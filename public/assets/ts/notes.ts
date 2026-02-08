@@ -16,58 +16,60 @@ const authBtn = document.getElementById('authBtn') as HTMLAnchorElement;
 const emptyState = document.getElementById('emptyState') as HTMLElement;
 
 async function loadNotes() {
-    if (!notesGrid) return;
+  if (!notesGrid) {
+    return;
+  }
 
-    try {
-        notesGrid.innerHTML = '<div class="loading"><div class="spinner"></div><span>جاري تحميل الملاحظات...</span></div>';
+  try {
+    notesGrid.innerHTML = '<div class="loading"><div class="spinner"></div><span>جاري تحميل الملاحظات...</span></div>';
 
-        const notesQuery = query(collection(db, 'notes'), orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(notesQuery);
+    const notesQuery = query(collection(db, 'notes'), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(notesQuery);
 
-        if (snapshot.empty) {
-            notesGrid.style.display = 'none';
-            emptyState.style.display = 'flex';
-            return;
-        }
-
-        notesGrid.innerHTML = '';
-        notesGrid.style.display = 'grid';
-        emptyState.style.display = 'none';
-
-        snapshot.forEach((docSnap) => {
-            const note = { id: docSnap.id, ...docSnap.data() } as Note;
-            const card = createNoteCard(note);
-            notesGrid.appendChild(card);
-        });
-
-    } catch (error) {
-        console.error('Error loading notes:', error);
-        notesGrid.innerHTML = '<div class="error-state"><p>حدث خطأ أثناء تحميل الملاحظات</p></div>';
+    if (snapshot.empty) {
+      notesGrid.style.display = 'none';
+      emptyState.style.display = 'flex';
+      return;
     }
+
+    notesGrid.innerHTML = '';
+    notesGrid.style.display = 'grid';
+    emptyState.style.display = 'none';
+
+    snapshot.forEach((docSnap) => {
+      const note = { id: docSnap.id, ...docSnap.data() } as Note;
+      const card = createNoteCard(note);
+      notesGrid.appendChild(card);
+    });
+
+  } catch (error) {
+    console.error('Error loading notes:', error);
+    notesGrid.innerHTML = '<div class="error-state"><p>حدث خطأ أثناء تحميل الملاحظات</p></div>';
+  }
 }
 
 function createNoteCard(note: Note): HTMLElement {
-    const card = document.createElement('article');
-    card.className = 'note-card';
-    card.setAttribute('role', 'listitem');
-    card.setAttribute('data-priority', note.priority || 'medium');
+  const card = document.createElement('article');
+  card.className = 'note-card';
+  card.setAttribute('role', 'listitem');
+  card.setAttribute('data-priority', note.priority || 'medium');
 
-    const priorityLabels = {
-        high: 'عالية',
-        medium: 'متوسطة',
-        low: 'منخفضة'
-    };
+  const priorityLabels = {
+    high: 'عالية',
+    medium: 'متوسطة',
+    low: 'منخفضة'
+  };
 
-    const priorityColors = {
-        high: '#ff4444',
-        medium: '#ffaa00',
-        low: '#00d4ff'
-    };
+  const priorityColors = {
+    high: '#ff4444',
+    medium: '#ffaa00',
+    low: '#00d4ff'
+  };
 
-    const priority = note.priority || 'medium';
-    const date = new Date(note.createdAt).toLocaleDateString('ar-EG');
+  const priority = note.priority || 'medium';
+  const date = new Date(note.createdAt).toLocaleDateString('ar-EG');
 
-    card.innerHTML = `
+  card.innerHTML = `
     <div class="note-header">
       <span class="note-priority" style="background: ${priorityColors[priority]}">
         ${priorityLabels[priority]}
@@ -79,42 +81,42 @@ function createNoteCard(note: Note): HTMLElement {
     </div>
   `;
 
-    return card;
+  return card;
 }
 
 searchInput?.addEventListener('input', (e) => {
-    const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
-    const cards = notesGrid.querySelectorAll('.note-card');
+  const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
+  const cards = notesGrid.querySelectorAll('.note-card');
 
-    cards.forEach((card) => {
-        const content = card.querySelector('.note-content')?.textContent?.toLowerCase() || '';
-        card.classList.toggle('hidden', !content.includes(searchTerm));
-    });
+  cards.forEach((card) => {
+    const content = card.querySelector('.note-content')?.textContent?.toLowerCase() || '';
+    card.classList.toggle('hidden', !content.includes(searchTerm));
+  });
 });
 
 priorityFilter?.addEventListener('change', (e) => {
-    const filterValue = (e.target as HTMLSelectElement).value;
-    const cards = notesGrid.querySelectorAll('.note-card');
+  const filterValue = (e.target as HTMLSelectElement).value;
+  const cards = notesGrid.querySelectorAll('.note-card');
 
-    cards.forEach((card) => {
-        if (filterValue === 'all') {
-            card.classList.remove('hidden');
-        } else {
-            const priority = card.getAttribute('data-priority');
-            card.classList.toggle('hidden', priority !== filterValue);
-        }
-    });
+  cards.forEach((card) => {
+    if (filterValue === 'all') {
+      card.classList.remove('hidden');
+    } else {
+      const priority = card.getAttribute('data-priority');
+      card.classList.toggle('hidden', priority !== filterValue);
+    }
+  });
 });
 
 onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        if (userDoc.exists()) {
-            currentUser = userDoc.data() as User;
-            authBtn.textContent = 'الملف الشخصي';
-            authBtn.href = currentUser.role === 'teacher' ? '/dashboard.html' : '/profile.html';
-        }
+  if (user) {
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    if (userDoc.exists()) {
+      currentUser = userDoc.data() as User;
+      authBtn.textContent = 'الملف الشخصي';
+      authBtn.href = currentUser.role === 'teacher' ? '/dashboard.html' : '/profile.html';
     }
+  }
 });
 
 document.addEventListener('DOMContentLoaded', loadNotes);

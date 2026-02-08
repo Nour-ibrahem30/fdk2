@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إصلاح دور المدرس</title>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f1f5f9;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #3b82f6;
+            margin-bottom: 1.5rem;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        .success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+        .info {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+        pre {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 إصلاح دور المدرس في Firebase</h1>
+        
+        <div class="status info">
+            <strong>المشكلة:</strong> حساب المدرس لا يحتوي على role = "teacher" في Firestore
+        </div>
+
+        <button class="btn" id="fixRoleBtn">إصلاح دور المدرس الآن</button>
+        
+        <div id="statusDiv"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAU0CCiQNrPEYpTNU4rAwmOmPUZnjb2FoU",
+            authDomain: "a-platform-for-learning.firebaseapp.com",
+            projectId: "a-platform-for-learning",
+            storageBucket: "a-platform-for-learning.firebasestorage.app",
+            messagingSenderId: "764579707883",
+            appId: "1:764579707883:web:5456e2348354cc58fab7ae",
+            measurementId: "G-4P972FP416",
+            databaseURL: "https://a-platform-for-learning-default-rtdb.firebaseio.com"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const statusDiv = document.getElementById('statusDiv');
+        const fixRoleBtn = document.getElementById('fixRoleBtn');
+
+        function showStatus(message, type = 'info') {
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // Check current user
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                showStatus(`
+                    <strong>المستخدم الحالي:</strong><br>
+                    البريد الإلكتروني: ${user.email}<br>
+                    UID: ${user.uid}
+                `, 'info');
+
+                // Check current role
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        showStatus(`
+                            <strong>البيانات الحالية:</strong>
+                            <pre>${JSON.stringify(userData, null, 2)}</pre>
+                        `, 'info');
+                    } else {
+                        showStatus('⚠️ لا يوجد مستند للمستخدم في Firestore', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error reading user data:', error);
+                }
+            } else {
+                showStatus('⚠️ يجب تسجيل الدخول أولاً! <a href="login.html" style="color: #60a5fa;">اذهب لتسجيل الدخول</a>', 'error');
+                fixRoleBtn.disabled = true;
+            }
+        });
+
+        // Fix role button
+        fixRoleBtn.addEventListener('click', async () => {
+            const user = auth.currentUser;
+            
+            if (!user) {
+                showStatus('⚠️ يجب تسجيل الدخول أولاً!', 'error');
+                return;
+            }
+
+            fixRoleBtn.disabled = true;
+            fixRoleBtn.textContent = 'جاري الإصلاح...';
+
+            try {
+                // Update user document with teacher role
+                const userRef = doc(db, 'users', user.uid);
+                
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    name: user.displayName || 'محمد ناصر',
+                    role: 'teacher',
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+
+                showStatus(`
+                    ✅ <strong>تم الإصلاح بنجاح!</strong><br><br>
+                    تم تحديث دور المستخدم إلى "teacher"<br>
+                    البريد الإلكتروني: ${user.email}<br>
+                    UID: ${user.uid}<br><br>
+                    <strong>الآن يمكنك:</strong><br>
+                    1. الذهاب إلى <a href="dashboard.html" style="color: #60a5fa;">لوحة التحكم</a><br>
+                    2. إضافة الفيديوهات والامتحانات<br>
+                    3. إدارة المحتوى بالكامل
+                `, 'success');
+
+                fixRoleBtn.textContent = '✅ تم الإصلاح';
+            } catch (error) {
+                console.error('Error fixing role:', error);
+                showStatus(`
+                    ❌ <strong>خطأ في الإصلاح:</strong><br>
+                    ${error.message}<br><br>
+                    <strong>الحل البديل:</strong><br>
+                    1. افتح Firebase Console<br>
+                    2. اذهب إلى Firestore Database<br>
+                    3. افتح collection "users"<br>
+                    4. ابحث عن المستند بـ UID: ${user.uid}<br>
+                    5. أضف حقل "role" بقيمة "teacher"
+                `, 'error');
+                
+                fixRoleBtn.disabled = false;
+                fixRoleBtn.textContent = 'إعادة المحاولة';
+            }
+        });
+    </script>
+</body>
+</html>

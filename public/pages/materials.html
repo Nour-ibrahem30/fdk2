@@ -211,15 +211,236 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
     </style>
 
     <script src="../assets/js/components-loader.js"></script>
-    <script src="../assets/dist/materials.js" type="module"></script>
-    <script>
-        // Tab switching
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const contents = document.querySelectorAll('.materials-content');
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, getDocs, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
+        const firebaseConfig = {
+            apiKey: "AIzaSyAU0CCiQNrPEYpTNU4rAwmOmPUZnjb2FoU",
+            authDomain: "a-platform-for-learning.firebaseapp.com",
+            projectId: "a-platform-for-learning",
+            storageBucket: "a-platform-for-learning.firebasestorage.app",
+            messagingSenderId: "764579707883",
+            appId: "1:764579707883:web:5456e2348354cc58fab7ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let allMaterials = [];
+        const tabBtns = document.querySelectorAll('.tab-btn');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                document.querySelectorAll('.materials-content').forEach(content => {
+                    content.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                            <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">🔒</span>
+                            <h3 style="color: #f87171; margin-bottom: 1rem;">يجب تسجيل الدخول</h3>
+                            <p style="color: #94a3b8; margin-bottom: 1.5rem;">يجب تسجيل الدخول لتحميل المذكرات</p>
+                            <a href="login.html" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; text-decoration: none; border-radius: 12px;">تسجيل الدخول</a>
+                        </div>
+                    `;
+                });
+                return;
+            }
+
+            await loadMaterials();
+        });
+
+        async function loadMaterials() {
+            try {
+                const materialsQuery = query(collection(db, 'materials'), orderBy('createdAt', 'desc'));
+                const materialsSnapshot = await getDocs(materialsQuery);
+                
+                allMaterials = materialsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                console.log('Loaded materials from Firebase:', allMaterials.length);
+                displayMaterialsByGrade();
+            } catch (error) {
+                console.error('Error loading materials:', error);
+                document.querySelectorAll('.materials-content').forEach(content => {
+                    content.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 16px;">
+                            <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">⚠️</span>
+                            <h3 style="color: #f87171; margin-bottom: 1rem;">خطأ في تحميل المذكرات</h3>
+                            <p style="color: #94a3b8;">${error.message}</p>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function displayMaterialsByGrade() {
+            const gradeLabels = {
+                '1': 'الصف الأول الثانوي',
+                '2': 'الصف الثاني الثانوي',
+                '3': 'الصف الثالث الثانوي'
+            };
+
+            ['1', '2', '3'].forEach(grade => {
+                const container = document.getElementById(`materialsGrade${grade}`);
+                if (!container) return;
+
+                const gradeMaterials = allMaterials.filter(m => m.grade === grade);
+
+                if (gradeMaterials.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-state-icon">📚</span>
+                            <h3>لا توجد مذكرات</h3>
+                            <p>لا توجد مذكرات لـ ${gradeLabels[grade]}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = gradeMaterials.map(material => `
+                    <div class="material-card">
+                        <div class="material-icon">📄</div>
+                        <h3 class="material-title">${material.title}</h3>
+                        <p class="material-description">${material.description || 'لا يوجد وصف'}</p>
+                        <div style="color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;">
+                            <div>📁 ${material.fileName || 'ملف'}</div>
+                            <div>💾 ${material.fileSize || 'غير محدد'}</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-download" style="flex: 1;" onclick="viewMaterial('${material.id}', '${material.title}', '${material.fileUrl}')">
+                                <span>👁️</span>
+                                عرض
+                            </button>
+                            <button class="btn-download" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669);" onclick="window.open('${material.fileUrl}', '_blank')">
+                                <span>⬇️</span>
+                                تحميل
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        // View material in popup
+        window.viewMaterial = function(id, title, fileUrl) {
+            const modal = document.createElement('div');
+            modal.id = 'materialModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease;
+            `;
+
+            const isPDF = fileUrl.toLowerCase().includes('.pdf') || fileUrl.includes('data:application/pdf');
+            
+            modal.innerHTML = `
+                <div style="width: 95%; max-width: 1200px; height: 90vh; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(20px); border-radius: 20px; border: 2px solid rgba(59, 130, 246, 0.3); display: flex; flex-direction: column; animation: slideUp 0.3s ease;">
+                    <div style="padding: 1.5rem; border-bottom: 2px solid rgba(59, 130, 246, 0.2); display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="color: #3b82f6; margin: 0; font-size: 1.5rem;">📄 ${title}</h2>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <button onclick="window.open('${fileUrl}', '_blank')" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>⬇️</span>
+                                تحميل
+                            </button>
+                            <button onclick="closeMaterialModal()" style="width: 40px; height: 40px; background: rgba(239, 68, 68, 0.2); color: #f87171; border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 50%; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                    <div style="flex: 1; overflow: hidden; padding: 1rem;">
+                        ${isPDF ? `
+                            <iframe src="${fileUrl}" style="width: 100%; height: 100%; border: none; border-radius: 12px; background: white;"></iframe>
+                        ` : `
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem;">
+                                <img src="${fileUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px;">
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+
+            // Close on ESC key
+            const handleEsc = (e) => {
+                if (e.key === 'Escape') {
+                    closeMaterialModal();
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+            modal.dataset.escHandler = 'true';
+
+            // Close on click outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeMaterialModal();
+                }
+            });
+        };
+
+        window.closeMaterialModal = function() {
+            const modal = document.getElementById('materialModal');
+            if (modal) {
+                modal.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => {
+                    modal.remove();
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+        };
+
+        // Tab switching
         tabBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const grade = btn.dataset.grade;
@@ -227,8 +448,11 @@
                 tabBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 
-                contents.forEach(c => c.classList.remove('active'));
-                document.getElementById(`materialsGrade${grade}`).classList.add('active');
+                document.querySelectorAll('.materials-content').forEach(c => c.classList.remove('active'));
+                const targetContent = document.getElementById(`materialsGrade${grade}`);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
             });
         });
     </script>

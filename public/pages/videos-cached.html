@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الفيديوهات | منصة الفيلسوف التعليمية</title>
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <style>
+        /* نفس الـ CSS من videos.html */
+        .video-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .video-card:hover {
+            transform: translateY(-4px);
+            border-color: #3b82f6;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+    <main style="padding-top: 100px; min-height: calc(100vh - 200px);">
+        <section style="padding: 3rem 0 2rem;">
+            <div class="container">
+                <h1>الفيديوهات التعليمية</h1>
+                <p>تصفح مكتبة الفيديوهات الشاملة</p>
+            </div>
+        </section>
+        <section>
+            <div class="container">
+                <div id="videosGrid" class="videos-grid">
+                    <div style="text-align: center; padding: 2rem; color: #94a3b8;">جاري تحميل الفيديوهات...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <div id="footer-placeholder"></div>
+
+    <script src="../assets/js/components-loader.js"></script>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAU0CCiQNrPEYpTNU4rAwmOmPUZnjb2FoU",
+            authDomain: "a-platform-for-learning.firebaseapp.com",
+            projectId: "a-platform-for-learning",
+            storageBucket: "a-platform-for-learning.firebasestorage.app",
+            messagingSenderId: "764579707883",
+            appId: "1:764579707883:web:5456e2348354cc58fab7ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const CACHE_KEY = 'videos_cache';
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 دقائق
+        let allVideos = [];
+        const videosGrid = document.getElementById('videosGrid');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                videosGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                        <h3 style="color: #f87171;">يجب تسجيل الدخول</h3>
+                        <a href="login.html" style="display: inline-block; padding: 1rem 2rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; text-decoration: none; border-radius: 12px; margin-top: 1rem;">تسجيل الدخول</a>
+                    </div>
+                `;
+                return;
+            }
+            await loadVideos();
+        });
+
+        async function loadVideos() {
+            try {
+                // محاولة تحميل من الـ Cache أولاً
+                const cached = getCachedData();
+                if (cached) {
+                    console.log('✅ تم التحميل من الـ Cache');
+                    allVideos = cached;
+                    displayVideos(allVideos);
+                    return;
+                }
+
+                // إذا لم يوجد cache، حمّل من Firebase
+                console.log('📡 جاري التحميل من Firebase...');
+                videosGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #94a3b8;">جاري تحميل الفيديوهات من الخادم...</div>';
+                
+                const videosQuery = query(collection(db, 'videos'), orderBy('createdAt', 'desc'));
+                const videosSnapshot = await getDocs(videosQuery);
+                
+                allVideos = videosSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                // حفظ في الـ Cache
+                setCachedData(allVideos);
+                console.log('✅ تم الحفظ في الـ Cache');
+                
+                displayVideos(allVideos);
+            } catch (error) {
+                console.error('Error loading videos:', error);
+                
+                if (error.code === 'resource-exhausted' || error.message.includes('429')) {
+                    videosGrid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: rgba(251, 191, 36, 0.1); border: 2px solid rgba(251, 191, 36, 0.3); border-radius: 16px;">
+                            <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">⚠️</span>
+                            <h3 style="color: #fbbf24; margin-bottom: 1rem;">تم تجاوز الحد المسموح</h3>
+                            <p style="color: #94a3b8; margin-bottom: 1rem;">تم استنفاد حصة Firebase اليومية</p>
+                            <p style="color: #94a3b8;">يرجى المحاولة بعد 24 ساعة أو الترقية إلى خطة مدفوعة</p>
+                        </div>
+                    `;
+                } else {
+                    videosGrid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                            <h3 style="color: #f87171;">خطأ في تحميل الفيديوهات</h3>
+                            <p style="color: #94a3b8;">${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // دوال الـ Cache
+        function getCachedData() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (!cached) return null;
+
+                const { data, timestamp } = JSON.parse(cached);
+                const now = Date.now();
+
+                // تحقق من صلاحية الـ Cache
+                if (now - timestamp < CACHE_DURATION) {
+                    return data;
+                }
+
+                // إذا انتهت صلاحية الـ Cache، احذفه
+                localStorage.removeItem(CACHE_KEY);
+                return null;
+            } catch (error) {
+                console.error('Error reading cache:', error);
+                return null;
+            }
+        }
+
+        function setCachedData(data) {
+            try {
+                const cacheObject = {
+                    data: data,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cacheObject));
+            } catch (error) {
+                console.error('Error setting cache:', error);
+            }
+        }
+
+        function displayVideos(videos) {
+            if (videos.length === 0) {
+                videosGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                        <span style="font-size: 3rem;">📹</span>
+                        <h3>لا توجد فيديوهات متاحة</h3>
+                    </div>
+                `;
+                return;
+            }
+
+            videosGrid.innerHTML = videos.map(video => `
+                <div class="video-card">
+                    <div style="position: relative; width: 100%; height: 200px; overflow: hidden;">
+                        <img src="${getYoutubeThumbnail(video.videoUrl)}" alt="${video.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <span style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.875rem;">${video.duration || 0} دقيقة</span>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <h3 style="font-size: 1.25rem; color: #f1f5f9; margin-bottom: 0.5rem;">${video.title}</h3>
+                        ${video.notes ? `<p style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 1rem;">${video.notes}</p>` : ''}
+                        <button onclick="window.location.href='video-player.html?id=${video.id}'" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">
+                            ▶️ مشاهدة الفيديو
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getYoutubeThumbnail(url) {
+            if (!url) return 'https://via.placeholder.com/400x225/1e293b/3b82f6?text=فيديو';
+            const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            if (match && match[1]) {
+                return `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
+            }
+            return 'https://via.placeholder.com/400x225/1e293b/3b82f6?text=فيديو';
+        }
+    </script>
+</body>
+</html>
