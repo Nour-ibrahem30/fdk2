@@ -291,43 +291,71 @@ function loadTodos() {
   });
 }
 
-function loadExamResults() {
+async function loadExamResults() {
   const container = document.getElementById('examResults');
   if (!container) return;
   
-  const sampleResults = [
-    { title: 'امتحان الرياضيات', score: 85, total: 100, date: '2024-02-10' },
-    { title: 'امتحان الفيزياء', score: 92, total: 100, date: '2024-02-08' },
-    { title: 'امتحان الكيمياء', score: 78, total: 100, date: '2024-02-05' }
-  ];
-  
-  container.innerHTML = '';
-  
-  sampleResults.forEach(result => {
-    const percentage = Math.round((result.score / result.total) * 100);
-    const passed = percentage >= 50;
+  try {
+    const user = auth.currentUser;
+    if (!user) return;
     
-    const resultElement = document.createElement('div');
-    resultElement.className = `result-item ${passed ? 'passed' : 'failed'}`;
+    // تحميل نتائج الامتحانات من Firebase
+    const resultsQuery = window.firebase.firestore()
+      .collection('examResults')
+      .where('userId', '==', user.uid)
+      .orderBy('completedAt', 'desc');
     
-    resultElement.innerHTML = `
-      <div class="result-info">
-        <h4>📝 ${result.title}</h4>
-        <p>📅 ${result.date}</p>
-      </div>
-      <div class="result-score">
-        <span class="score-value">${percentage}%</span>
-        <span class="score-label">${result.score}/${result.total}</span>
-      </div>
-      <div class="result-status">
-        <span class="${passed ? 'badge-success' : 'badge-danger'}">
-          ${passed ? '✅ ناجح' : '❌ راسب'}
-        </span>
+    const resultsSnapshot = await resultsQuery.get();
+    
+    if (resultsSnapshot.empty) {
+      container.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #94a3b8;">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+          <p>لم تقم بحل أي امتحان بعد</p>
+        </div>
+      `;
+      return;
+    }
+    
+    container.innerHTML = '';
+    
+    resultsSnapshot.forEach(doc => {
+      const result = doc.data();
+      const percentage = Math.round(result.score);
+      const passed = result.passed;
+      
+      const resultElement = document.createElement('div');
+      resultElement.className = `result-item ${passed ? 'passed' : 'failed'}`;
+      
+      const date = new Date(result.completedAt).toLocaleDateString('ar-EG');
+      
+      resultElement.innerHTML = `
+        <div class="result-info">
+          <h4>📝 ${result.examTitle}</h4>
+          <p>📅 ${date}</p>
+        </div>
+        <div class="result-score">
+          <span class="score-value">${percentage}%</span>
+          <span class="score-label">${result.correctAnswers}/${result.totalQuestions}</span>
+        </div>
+        <div class="result-status">
+          <span class="${passed ? 'badge-success' : 'badge-danger'}">
+            ${passed ? '✅ ناجح' : '❌ راسب'}
+          </span>
+        </div>
+      `;
+      
+      container.appendChild(resultElement);
+    });
+    
+  } catch (error) {
+    console.error('Error loading exam results:', error);
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #f87171;">
+        <p>حدث خطأ في تحميل النتائج</p>
       </div>
     `;
-    
-    container.appendChild(resultElement);
-  });
+  }
 }
 
 function loadAchievements() {

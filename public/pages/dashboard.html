@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     
-    <title>لوحة التحكم | منصة الفيلسوف التعليمية</title>
+    <title>لوحة التحكم | منصة محمد ناصر التعليمية</title>
     <meta name="description" content="لوحة تحكم المدرس - إدارة المحتوى التعليمي">
     <meta name="robots" content="noindex, nofollow">
     
@@ -466,6 +466,10 @@
                     <span class="sidebar-icon" aria-hidden="true">📋</span>
                     <span>إدارة الامتحانات</span>
                 </button>
+                <button class="sidebar-link" data-section="results">
+                    <span class="sidebar-icon" aria-hidden="true">📊</span>
+                    <span>نتائج الطلاب</span>
+                </button>
                 <button class="sidebar-link" data-section="notes">
                     <span class="sidebar-icon" aria-hidden="true">📝</span>
                     <span>إدارة الملاحظات</span>
@@ -473,10 +477,6 @@
                 <button class="sidebar-link" data-section="materials">
                     <span class="sidebar-icon" aria-hidden="true">📚</span>
                     <span>إدارة المذكرات</span>
-                </button>
-                <button class="sidebar-link" data-section="testimonials">
-                    <span class="sidebar-icon" aria-hidden="true">💬</span>
-                    <span>إدارة الآراء</span>
                 </button>
                 <button class="sidebar-link" data-section="students">
                     <span class="sidebar-icon" aria-hidden="true">👥</span>
@@ -551,6 +551,16 @@
                 <div id="examsList" class="content-list"></div>
             </section>
 
+            <section id="results-section" class="dashboard-section">
+                <h1 class="dashboard-title">نتائج الطلاب في الامتحانات</h1>
+                <div id="resultsFilter" style="margin-bottom: 2rem;">
+                    <select id="examFilter" class="form-select" style="max-width: 400px;">
+                        <option value="all">جميع الامتحانات</option>
+                    </select>
+                </div>
+                <div id="studentResultsList" class="content-list"></div>
+            </section>
+
             <section id="notes-section" class="dashboard-section">
                 <div class="section-header">
                     <h1 class="dashboard-title">إدارة الملاحظات</h1>
@@ -579,17 +589,6 @@
                 <div id="materialsGrade1" class="materials-content active"></div>
                 <div id="materialsGrade2" class="materials-content" style="display: none;"></div>
                 <div id="materialsGrade3" class="materials-content" style="display: none;"></div>
-            </section>
-
-            <section id="testimonials-section" class="dashboard-section">
-                <div class="section-header">
-                    <h1 class="dashboard-title">إدارة آراء الطلاب</h1>
-                    <button class="btn btn-primary" id="addTestimonialBtn">
-                        <span aria-hidden="true">➕</span> إضافة رأي
-                    </button>
-                </div>
-                
-                <div id="testimonialsList" class="content-list"></div>
             </section>
 
             <section id="students-section" class="dashboard-section">
@@ -906,8 +905,8 @@
             let videos = [];
             let exams = [];
             let notes = [];
-            let testimonials = [];
             let materials = [];
+            let examResults = [];
             
             // Load videos from Firebase
             try {
@@ -936,15 +935,6 @@
                 console.error('Error loading notes from Firebase:', e);
             }
             
-            // Load testimonials from Firebase
-            try {
-                const testimonialsSnapshot = await getDocs(collection(db, 'testimonials'));
-                testimonials = testimonialsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                console.log('Loaded testimonials from Firebase:', testimonials.length);
-            } catch (e) {
-                console.error('Error loading testimonials from Firebase:', e);
-            }
-            
             // Load materials from Firebase
             try {
                 const materialsSnapshot = await getDocs(collection(db, 'materials'));
@@ -954,12 +944,21 @@
                 console.error('Error loading materials from Firebase:', e);
             }
             
+            // Load exam results from Firebase
+            try {
+                const resultsSnapshot = await getDocs(collection(db, 'examResults'));
+                examResults = resultsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log('Loaded exam results from Firebase:', examResults.length);
+            } catch (e) {
+                console.error('Error loading exam results from Firebase:', e);
+            }
+            
             console.log('Loaded data:', {
                 videos: videos.length,
                 exams: exams.length,
                 notes: notes.length,
-                testimonials: testimonials.length,
-                materials: materials.length
+                materials: materials.length,
+                examResults: examResults.length
             });
             
             // Firebase helper functions - no need for saveData anymore
@@ -1356,14 +1355,51 @@
             }
 
             // Add Exam Button
+            let questionCount = 0;
+            
             const addExamBtn = document.getElementById('addExamBtn');
             if (addExamBtn) {
                 console.log('Add Exam Button found');
                 addExamBtn.addEventListener('click', function() {
                     console.log('Add Exam button clicked');
+                    questionCount = 0; // Reset question count
+                    
                     createModal(
                         'إضافة امتحان جديد',
                         `
+                        <style>
+                            .btn-sm {
+                                padding: 0.5rem 1rem;
+                                font-size: 0.875rem;
+                            }
+                            .question-item {
+                                animation: slideIn 0.3s ease;
+                            }
+                            @keyframes slideIn {
+                                from {
+                                    opacity: 0;
+                                    transform: translateY(-10px);
+                                }
+                                to {
+                                    opacity: 1;
+                                    transform: translateY(0);
+                                }
+                            }
+                            #questionsContainer::-webkit-scrollbar {
+                                width: 8px;
+                            }
+                            #questionsContainer::-webkit-scrollbar-track {
+                                background: rgba(15, 23, 42, 0.5);
+                                border-radius: 4px;
+                            }
+                            #questionsContainer::-webkit-scrollbar-thumb {
+                                background: rgba(59, 130, 246, 0.5);
+                                border-radius: 4px;
+                            }
+                            #questionsContainer::-webkit-scrollbar-thumb:hover {
+                                background: rgba(59, 130, 246, 0.7);
+                            }
+                        </style>
                         <form id="examForm">
                             <div class="form-group">
                                 <label class="form-label">عنوان الامتحان</label>
@@ -1371,65 +1407,270 @@
                             </div>
                             <div class="form-group">
                                 <label class="form-label">المدة (دقائق)</label>
-                                <input type="number" class="form-input" id="examDuration" min="0" placeholder="0" required>
+                                <input type="number" class="form-input" id="examDuration" min="0" placeholder="60" required>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">الوصف</label>
-                                <textarea class="form-textarea" id="examDescription" rows="4" placeholder="وصف الامتحان"></textarea>
+                                <textarea class="form-textarea" id="examDescription" rows="3" placeholder="وصف الامتحان"></textarea>
                             </div>
                             <div class="form-group">
+                                <label class="form-label">نوع الامتحان</label>
+                                <select class="form-select" id="examType" required>
+                                    <option value="external">رابط خارجي (Google Forms)</option>
+                                    <option value="internal">امتحان مدمج (داخل المنصة)</option>
+                                </select>
+                            </div>
+                            
+                            <!-- للامتحان الخارجي -->
+                            <div class="form-group" id="externalExamGroup">
                                 <label class="form-label">رابط الامتحان</label>
-                                <input type="url" class="form-input" id="examUrl" placeholder="https://forms.google.com/..." required>
+                                <input type="url" class="form-input" id="examUrl" placeholder="https://forms.google.com/...">
                                 <p style="color: #94a3b8; font-size: 0.875rem; margin-top: 0.5rem;">يمكنك استخدام Google Forms أو أي منصة أخرى</p>
+                            </div>
+                            
+                            <!-- للامتحان المدمج -->
+                            <div class="form-group" id="internalExamGroup" style="display: none;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <label class="form-label" style="margin: 0;">الأسئلة</label>
+                                    <button type="button" class="btn btn-sm btn-primary" id="addQuestionBtn">➕ إضافة سؤال</button>
+                                </div>
+                                <div id="questionsContainer" style="max-height: 400px; overflow-y: auto;"></div>
                             </div>
                         </form>
                         `,
                         () => {
                             console.log('Processing exam form...');
+                            const examType = document.getElementById('examType').value;
                             const title = document.getElementById('examTitle').value.trim();
                             const duration = document.getElementById('examDuration').value;
                             const description = document.getElementById('examDescription').value.trim();
-                            const examUrl = document.getElementById('examUrl').value.trim();
                             
-                            console.log('📋 Form data:', { title, duration, description, examUrl });
-                            
-                            if (!title || !duration || !examUrl) {
+                            if (!title || !duration) {
                                 showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
                                 return false;
                             }
                             
-                            const newExam = {
-                                title,
-                                duration: parseInt(duration),
-                                description,
-                                examUrl,
-                                createdAt: new Date().toISOString()
-                            };
-                            
-                            console.log('Adding exam to Firebase:', newExam);
-                            
-                            // Save to Firebase
-                            return addDoc(collection(db, 'exams'), newExam)
-                                .then((docRef) => {
-                                    newExam.id = docRef.id;
-                                    exams.push(newExam);
-                                    renderExams();
-                                    updateStats();
-                                    showToast('تم إضافة الامتحان بنجاح!', 'success');
-                                    console.log('Exam added successfully to Firebase');
-                                    return true;
-                                })
-                                .catch((error) => {
-                                    console.error('Failed to save exam to Firebase:', error);
-                                    showToast('خطأ في حفظ الامتحان: ' + error.message, 'error');
+                            if (examType === 'external') {
+                                // امتحان خارجي
+                                const examUrl = document.getElementById('examUrl').value.trim();
+                                
+                                if (!examUrl) {
+                                    showToast('يرجى إدخال رابط الامتحان', 'error');
                                     return false;
+                                }
+                                
+                                const newExam = {
+                                    title,
+                                    duration: parseInt(duration),
+                                    description,
+                                    examType: 'external',
+                                    examUrl,
+                                    createdAt: new Date().toISOString()
+                                };
+                                
+                                return addDoc(collection(db, 'exams'), newExam)
+                                    .then((docRef) => {
+                                        newExam.id = docRef.id;
+                                        exams.push(newExam);
+                                        renderExams();
+                                        updateStats();
+                                        showToast('تم إضافة الامتحان بنجاح!', 'success');
+                                        return true;
+                                    })
+                                    .catch((error) => {
+                                        console.error('Failed to save exam:', error);
+                                        showToast('خطأ في حفظ الامتحان: ' + error.message, 'error');
+                                        return false;
+                                    });
+                                    
+                            } else {
+                                // امتحان مدمج
+                                const questionElements = document.querySelectorAll('.question-item');
+                                
+                                if (questionElements.length === 0) {
+                                    showToast('يرجى إضافة سؤال واحد على الأقل', 'error');
+                                    return false;
+                                }
+                                
+                                const questions = [];
+                                let hasError = false;
+                                
+                                questionElements.forEach((qEl) => {
+                                    const qId = qEl.dataset.questionId;
+                                    const questionText = document.getElementById(`question_${qId}_text`).value.trim();
+                                    const type = document.getElementById(`question_${qId}_type`).value;
+                                    const correctAnswer = parseInt(document.getElementById(`question_${qId}_correct`).value);
+                                    const explanation = document.getElementById(`question_${qId}_explanation`).value.trim();
+                                    
+                                    if (!questionText) {
+                                        showToast('يرجى ملء نص جميع الأسئلة', 'error');
+                                        hasError = true;
+                                        return;
+                                    }
+                                    
+                                    const optionsCount = type === 'true-false' ? 2 : 4;
+                                    const options = [];
+                                    
+                                    for (let i = 0; i < optionsCount; i++) {
+                                        const optionEl = document.getElementById(`question_${qId}_option_${i}`);
+                                        if (optionEl) {
+                                            const optionValue = optionEl.value.trim();
+                                            if (!optionValue && type !== 'true-false') {
+                                                showToast('يرجى ملء جميع الخيارات', 'error');
+                                                hasError = true;
+                                                return;
+                                            }
+                                            options.push(optionValue);
+                                        }
+                                    }
+                                    
+                                    questions.push({
+                                        question: questionText,
+                                        type: type,
+                                        options: options,
+                                        correctAnswer: correctAnswer,
+                                        explanation: explanation
+                                    });
                                 });
+                                
+                                if (hasError) return false;
+                                
+                                const newExam = {
+                                    title,
+                                    duration: parseInt(duration),
+                                    description,
+                                    examType: 'internal',
+                                    questions: questions,
+                                    createdAt: new Date().toISOString()
+                                };
+                                
+                                return addDoc(collection(db, 'exams'), newExam)
+                                    .then((docRef) => {
+                                        newExam.id = docRef.id;
+                                        exams.push(newExam);
+                                        renderExams();
+                                        updateStats();
+                                        showToast('تم إضافة الامتحان المدمج بنجاح!', 'success');
+                                        console.log('Exam added with', questions.length, 'questions');
+                                        return true;
+                                    })
+                                    .catch((error) => {
+                                        console.error('Failed to save exam:', error);
+                                        showToast('خطأ في حفظ الامتحان: ' + error.message, 'error');
+                                        return false;
+                                    });
+                            }
                         }
                     );
+                    
+                    // Setup event listeners after modal is created
+                    setTimeout(() => {
+                        // عند تغيير نوع الامتحان
+                        const examTypeSelect = document.getElementById('examType');
+                        if (examTypeSelect) {
+                            examTypeSelect.addEventListener('change', function() {
+                                const isInternal = this.value === 'internal';
+                                document.getElementById('externalExamGroup').style.display = isInternal ? 'none' : 'block';
+                                document.getElementById('internalExamGroup').style.display = isInternal ? 'block' : 'none';
+                                
+                                // تحديث required
+                                document.getElementById('examUrl').required = !isInternal;
+                            });
+                        }
+                        
+                        // إضافة سؤال جديد
+                        const addQuestionBtn = document.getElementById('addQuestionBtn');
+                        if (addQuestionBtn) {
+                            addQuestionBtn.addEventListener('click', function() {
+                                questionCount++;
+                                const questionHTML = `
+                                    <div class="question-item" data-question-id="${questionCount}" style="background: rgba(15, 23, 42, 0.5); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border: 2px solid rgba(59, 130, 246, 0.2);">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                            <h4 style="color: #3b82f6; margin: 0;">السؤال ${questionCount}</h4>
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="removeQuestion(${questionCount})">🗑️</button>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">نص السؤال</label>
+                                            <textarea class="form-textarea" id="question_${questionCount}_text" rows="2" required></textarea>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">نوع السؤال</label>
+                                            <select class="form-select" id="question_${questionCount}_type" onchange="updateQuestionOptions(${questionCount})">
+                                                <option value="true-false">صح أم خطأ</option>
+                                                <option value="mcq">اختيار من متعدد</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div id="question_${questionCount}_options"></div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">الإجابة الصحيحة</label>
+                                            <select class="form-select" id="question_${questionCount}_correct" required></select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">الشرح (اختياري)</label>
+                                            <textarea class="form-textarea" id="question_${questionCount}_explanation" rows="2" placeholder="شرح الإجابة الصحيحة"></textarea>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                document.getElementById('questionsContainer').insertAdjacentHTML('beforeend', questionHTML);
+                                updateQuestionOptions(questionCount);
+                            });
+                        }
+                    }, 100);
                 });
             } else {
                 console.error('Add Exam Button not found!');
             }
+            
+            // تحديث خيارات السؤال
+            window.updateQuestionOptions = function(questionId) {
+                const type = document.getElementById(`question_${questionId}_type`).value;
+                const optionsContainer = document.getElementById(`question_${questionId}_options`);
+                const correctSelect = document.getElementById(`question_${questionId}_correct`);
+                
+                if (type === 'true-false') {
+                    optionsContainer.innerHTML = `
+                        <div class="form-group">
+                            <label class="form-label">الخيارات</label>
+                            <input type="text" class="form-input" id="question_${questionId}_option_0" value="صح" readonly style="background: rgba(30, 41, 59, 0.5);">
+                            <input type="text" class="form-input" id="question_${questionId}_option_1" value="خطأ" readonly style="margin-top: 0.5rem; background: rgba(30, 41, 59, 0.5);">
+                        </div>
+                    `;
+                    correctSelect.innerHTML = `
+                        <option value="0">صح</option>
+                        <option value="1">خطأ</option>
+                    `;
+                } else {
+                    optionsContainer.innerHTML = `
+                        <div class="form-group">
+                            <label class="form-label">الخيارات</label>
+                            <input type="text" class="form-input" id="question_${questionId}_option_0" placeholder="الخيار الأول" required>
+                            <input type="text" class="form-input" id="question_${questionId}_option_1" placeholder="الخيار الثاني" required style="margin-top: 0.5rem;">
+                            <input type="text" class="form-input" id="question_${questionId}_option_2" placeholder="الخيار الثالث" required style="margin-top: 0.5rem;">
+                            <input type="text" class="form-input" id="question_${questionId}_option_3" placeholder="الخيار الرابع" required style="margin-top: 0.5rem;">
+                        </div>
+                    `;
+                    correctSelect.innerHTML = `
+                        <option value="0">الخيار الأول</option>
+                        <option value="1">الخيار الثاني</option>
+                        <option value="2">الخيار الثالث</option>
+                        <option value="3">الخيار الرابع</option>
+                    `;
+                }
+            };
+            
+            // حذف سؤال
+            window.removeQuestion = function(questionId) {
+                const questionEl = document.querySelector(`[data-question-id="${questionId}"]`);
+                if (questionEl) {
+                    questionEl.remove();
+                }
+            };
 
 
 
@@ -1506,80 +1747,7 @@
                 console.error('Add Note Button not found!');
             }
 
-            // Add Testimonial Button
-            const addTestimonialBtn = document.getElementById('addTestimonialBtn');
-            if (addTestimonialBtn) {
-                console.log('Add Testimonial Button found');
-                addTestimonialBtn.addEventListener('click', function() {
-                    console.log('Add Testimonial button clicked');
-                    createModal(
-                        'إضافة رأي طالب',
-                        `
-                        <form id="testimonialForm">
-                            <div class="form-group">
-                                <label class="form-label">اسم الطالب</label>
-                                <input type="text" class="form-input" id="studentName" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">الرأي</label>
-                                <textarea class="form-textarea" id="testimonialComment" rows="4" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">التقييم</label>
-                                <select class="form-select" id="testimonialRating" required>
-                                    <option value="">اختر التقييم</option>
-                                    <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-                                    <option value="4">⭐⭐⭐⭐ (4/5)</option>
-                                    <option value="3">⭐⭐⭐ (3/5)</option>
-                                    <option value="2">⭐⭐ (2/5)</option>
-                                    <option value="1">⭐ (1/5)</option>
-                                </select>
-                            </div>
-                        </form>
-                        `,
-                        () => {
-                            console.log('Processing testimonial form...');
-                            const studentName = document.getElementById('studentName').value.trim();
-                            const comment = document.getElementById('testimonialComment').value.trim();
-                            const rating = document.getElementById('testimonialRating').value;
-                            
-                            console.log('📋 Form data:', { studentName, comment, rating });
-                            
-                            if (!studentName || !comment || !rating) {
-                                showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
-                                return false;
-                            }
-                            
-                            const newTestimonial = {
-                                studentName,
-                                comment,
-                                rating: parseInt(rating),
-                                createdAt: new Date().toISOString()
-                            };
-                            
-                            console.log('Adding testimonial to Firebase:', newTestimonial);
-                            
-                            // Save to Firebase
-                            return addDoc(collection(db, 'testimonials'), newTestimonial)
-                                .then((docRef) => {
-                                    newTestimonial.id = docRef.id;
-                                    testimonials.push(newTestimonial);
-                                    renderTestimonials();
-                                    showToast('تم إضافة رأي الطالب بنجاح!', 'success');
-                                    console.log('Testimonial added successfully to Firebase');
-                                    return true;
-                                })
-                                .catch((error) => {
-                                    console.error('Failed to save testimonial to Firebase:', error);
-                                    showToast('خطأ في حفظ الرأي: ' + error.message, 'error');
-                                    return false;
-                                });
-                        }
-                    );
-                });
-            } else {
-                console.error('Add Testimonial Button not found!');
-            }
+
 
             // Add Material Button
             const addMaterialBtn = document.getElementById('addMaterialBtn');
@@ -1791,34 +1959,7 @@
                 console.log('Notes rendered:', notes.length);
             }
 
-            function renderTestimonials() {
-                console.log('Rendering testimonials...');
-                const testimonialsList = document.getElementById('testimonialsList');
-                if (!testimonialsList) {
-                    console.error('Testimonials list element not found!');
-                    return;
-                }
-                
-                if (testimonials.length === 0) {
-                    testimonialsList.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">لا توجد آراء حالياً</p>';
-                    return;
-                }
-                
-                testimonialsList.innerHTML = testimonials.map(testimonial => `
-                    <div class="content-item">
-                        <div class="content-item-header">
-                            <h3 class="content-item-title">${testimonial.studentName}</h3>
-                            <div class="content-item-actions">
-                                <button class="btn btn-sm btn-danger" onclick="deleteTestimonial('${testimonial.id}')">🗑️ حذف</button>
-                            </div>
-                        </div>
-                        <p style="color: #94a3b8; margin-top: 0.5rem;">${testimonial.comment}</p>
-                        <p style="color: #fbbf24; font-size: 1.2rem; margin-top: 0.5rem;">${'⭐'.repeat(testimonial.rating)}</p>
-                    </div>
-                `).join('');
-                
-                console.log('Testimonials rendered:', testimonials.length);
-            }
+
 
             function renderMaterials() {
                 console.log('Rendering materials...');
@@ -1905,21 +2046,106 @@
                     return;
                 }
                 
-                examsList.innerHTML = exams.map(exam => `
-                    <div class="content-item">
-                        <div class="content-item-header">
-                            <h3 class="content-item-title">📋 ${exam.title}</h3>
-                            <div class="content-item-actions">
-                                <button class="btn btn-sm btn-primary" onclick="window.open('${exam.examUrl}', '_blank')">📝 فتح الامتحان</button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteExam('${exam.id}')">🗑️ حذف</button>
+                examsList.innerHTML = exams.map(exam => {
+                    const examTypeLabel = exam.examType === 'internal' ? '📝 امتحان مدمج' : '🔗 امتحان خارجي';
+                    const examTypeColor = exam.examType === 'internal' ? '#10b981' : '#3b82f6';
+                    
+                    let actionButton = '';
+                    if (exam.examType === 'internal') {
+                        actionButton = `<button class="btn btn-sm btn-primary" onclick="window.location.href='exam-player.html?id=${exam.id}'">📝 بدء الامتحان</button>`;
+                    } else {
+                        actionButton = `<button class="btn btn-sm btn-primary" onclick="window.open('${exam.examUrl}', '_blank')">📝 فتح الامتحان</button>`;
+                    }
+                    
+                    return `
+                        <div class="content-item">
+                            <div class="content-item-header">
+                                <div>
+                                    <h3 class="content-item-title">📋 ${exam.title}</h3>
+                                    <p style="color: ${examTypeColor}; font-size: 0.875rem; margin-top: 0.25rem;">${examTypeLabel}${exam.examType === 'internal' ? ` (${exam.questions?.length || 0} سؤال)` : ''}</p>
+                                </div>
+                                <div class="content-item-actions">
+                                    ${actionButton}
+                                    <button class="btn btn-sm btn-danger" onclick="deleteExam('${exam.id}')">🗑️ حذف</button>
+                                </div>
                             </div>
+                            ${exam.description ? `<p style="color: #94a3b8; margin-top: 0.5rem;">${exam.description}</p>` : ''}
+                            <p style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">المدة: ${exam.duration || 0} دقيقة</p>
                         </div>
-                        ${exam.description ? `<p style="color: #94a3b8; margin-top: 0.5rem;">${exam.description}</p>` : ''}
-                        <p style="color: #64748b; font-size: 0.875rem; margin-top: 0.5rem;">المدة: ${exam.duration || 0} دقيقة</p>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
                 
                 console.log('Exams rendered:', exams.length);
+                
+                // تحديث قائمة الامتحانات في الفلتر
+                const examFilter = document.getElementById('examFilter');
+                if (examFilter) {
+                    examFilter.innerHTML = '<option value="all">جميع الامتحانات</option>' +
+                        exams.map(exam => `<option value="${exam.id}">${exam.title}</option>`).join('');
+                }
+            }
+            
+            function renderStudentResults(filterExamId = 'all') {
+                console.log('Rendering student results...');
+                const resultsList = document.getElementById('studentResultsList');
+                if (!resultsList) {
+                    console.error('Results list element not found!');
+                    return;
+                }
+                
+                let filteredResults = examResults;
+                if (filterExamId !== 'all') {
+                    filteredResults = examResults.filter(r => r.examId === filterExamId);
+                }
+                
+                if (filteredResults.length === 0) {
+                    resultsList.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">لا توجد نتائج حالياً</p>';
+                    return;
+                }
+                
+                // ترتيب حسب التاريخ (الأحدث أولاً)
+                filteredResults.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+                
+                resultsList.innerHTML = filteredResults.map(result => {
+                    const passed = result.passed;
+                    const date = new Date(result.completedAt).toLocaleString('ar-EG');
+                    const percentage = Math.round(result.score);
+                    
+                    return `
+                        <div class="content-item">
+                            <div class="content-item-header">
+                                <div>
+                                    <h3 class="content-item-title">👤 ${result.userEmail}</h3>
+                                    <p style="color: #94a3b8; font-size: 0.875rem; margin-top: 0.25rem;">📋 ${result.examTitle}</p>
+                                </div>
+                                <div style="text-align: left;">
+                                    <div style="font-size: 2rem; font-weight: bold; color: ${passed ? '#10b981' : '#f87171'};">
+                                        ${percentage}%
+                                    </div>
+                                    <div style="color: #64748b; font-size: 0.875rem;">
+                                        ${result.correctAnswers}/${result.totalQuestions}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                                <span style="color: #94a3b8; font-size: 0.875rem;">📅 ${date}</span>
+                                <span style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: bold; background: ${passed ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}; color: ${passed ? '#10b981' : '#f87171'};">
+                                    ${passed ? '✅ ناجح' : '❌ راسب'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                console.log('Results rendered:', filteredResults.length);
+            }
+            
+            // Event listener للفلتر
+            const examFilter = document.getElementById('examFilter');
+            if (examFilter) {
+                examFilter.addEventListener('change', function() {
+                    renderStudentResults(this.value);
+                });
             }
 
             function updateStats() {
@@ -2000,26 +2226,7 @@
                 );
             };
 
-            window.deleteTestimonial = function(id) {
-                console.log('Deleting testimonial from Firebase:', id);
-                createConfirmModal(
-                    'حذف الرأي',
-                    'هل أنت متأكد من حذف هذا الرأي؟',
-                    () => {
-                        deleteDoc(doc(db, 'testimonials', id))
-                            .then(() => {
-                                testimonials = testimonials.filter(t => t.id !== id);
-                                renderTestimonials();
-                                showToast('تم حذف الرأي بنجاح!', 'success');
-                                console.log('Testimonial deleted from Firebase');
-                            })
-                            .catch((error) => {
-                                console.error('Error deleting testimonial:', error);
-                                showToast('خطأ في حذف الرأي: ' + error.message, 'error');
-                            });
-                    }
-                );
-            };
+
 
             window.deleteMaterial = function(id) {
                 console.log('Deleting material from Firebase:', id);
@@ -2047,23 +2254,20 @@
             renderVideos();
             renderExams();
             renderNotes();
-            renderTestimonials();
             renderMaterials();
+            renderStudentResults();
             updateStats();
             
             // Test buttons after a short delay
             setTimeout(() => {
-                const testimonialBtn = document.getElementById('addTestimonialBtn');
                 const noteBtn = document.getElementById('addNoteBtn');
                 const materialBtn = document.getElementById('addMaterialBtn');
                 
                 console.log('Button status check:', {
-                    testimonialBtn: !!testimonialBtn,
                     noteBtn: !!noteBtn,
                     materialBtn: !!materialBtn
                 });
                 
-                if (!testimonialBtn) console.error('Testimonial button missing!');
                 if (!noteBtn) console.error('Note button missing!');
                 if (!materialBtn) console.error('Material button missing!');
             }, 1000);
