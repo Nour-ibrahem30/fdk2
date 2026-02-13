@@ -14,47 +14,79 @@
 
 .btn-secondary {
   @include button-base;
-  background: transparent;
-  color: $text-primary;
-  border: 2px solid $border-color;
+  background: rgba($accent-primary, 0.1);
+  color: $accent-primary;
+  border: 2px solid rgba($accent-primary, 0.3);
+  box-shadow: 0 2px 8px rgba($accent-primary, 0.1);
   
   &:hover {
+    background: rgba($accent-primary, 0.2);
     border-color: $accent-primary;
     color: $accent-primary;
-    box-shadow: 0 8px 20px rgba($accent-primary, 0.2);
+    box-shadow: 0 8px 24px rgba($accent-primary, 0.3);
+    transform: translateY(-3px);
+  }
+  
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($accent-primary, 0.2);
   }
 }
 
 .btn-success {
   @include button-base;
-  background: $accent-success;
+  background: linear-gradient(135deg, $accent-success, darken($accent-success, 5%));
   color: white;
+  box-shadow: 0 4px 12px rgba($accent-success, 0.2);
   
   &:hover {
-    background: darken($accent-success, 10%);
-    box-shadow: 0 8px 20px rgba($accent-success, 0.4);
+    background: linear-gradient(135deg, lighten($accent-success, 5%), $accent-success);
+    box-shadow: 0 8px 24px rgba($accent-success, 0.5);
+    filter: brightness(1.1);
+    transform: translateY(-3px);
+  }
+  
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($accent-success, 0.4);
   }
 }
 
 .btn-danger {
   @include button-base;
-  background: $accent-danger;
+  background: linear-gradient(135deg, $accent-danger, darken($accent-danger, 5%));
   color: white;
+  box-shadow: 0 4px 12px rgba($accent-danger, 0.2);
   
   &:hover {
-    background: darken($accent-danger, 10%);
-    box-shadow: 0 8px 20px rgba($accent-danger, 0.4);
+    background: linear-gradient(135deg, lighten($accent-danger, 5%), $accent-danger);
+    box-shadow: 0 8px 24px rgba($accent-danger, 0.5);
+    filter: brightness(1.1);
+    transform: translateY(-3px);
+  }
+  
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($accent-danger, 0.4);
   }
 }
 
 .btn-warning {
   @include button-base;
-  background: $accent-warning;
+  background: linear-gradient(135deg, $accent-warning, darken($accent-warning, 5%));
   color: white;
+  box-shadow: 0 4px 12px rgba($accent-warning, 0.2);
   
   &:hover {
-    background: darken($accent-warning, 10%);
-    box-shadow: 0 8px 20px rgba($accent-warning, 0.4);
+    background: linear-gradient(135deg, lighten($accent-warning, 5%), $accent-warning);
+    box-shadow: 0 8px 24px rgba($accent-warning, 0.5);
+    filter: brightness(1.1);
+    transform: translateY(-3px);
+  }
+  
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($accent-warning, 0.4);
   }
 }
 

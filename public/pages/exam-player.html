@@ -78,6 +78,12 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
 
         .question {
             background: rgba(15, 23, 42, 0.5);
@@ -371,6 +377,12 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // Expose Firebase functions to global scope
+        window.firebaseDb = db;
+        window.firebaseDoc = doc;
+        window.firebaseGetDoc = getDoc;
+        window.firebaseSetDoc = setDoc;
 
         // Get exam ID from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -410,6 +422,7 @@
 
                 displayExam();
                 startTimer();
+                updateSubmitButton(); // تحديث حالة زر الإرسال عند التحميل
             } catch (error) {
                 console.error('Error loading exam:', error);
                 alert('خطأ في تحميل الامتحان');
@@ -483,20 +496,72 @@
             questionEl.querySelectorAll('.option').forEach((opt, idx) => {
                 opt.classList.toggle('selected', idx === optionIndex);
             });
+            
+            // تحديث حالة زر الإرسال
+            updateSubmitButton();
         };
-
-        document.getElementById('submitBtn').addEventListener('click', () => {
-            if (Object.keys(userAnswers).length < examData.questions.length) {
-                if (!confirm('لم تجب على جميع الأسئلة. هل تريد التسليم؟')) {
-                    return;
-                }
+        
+        // دالة تحديث زر الإرسال
+        function updateSubmitButton() {
+            const submitBtn = document.getElementById('submitBtn');
+            const answeredCount = Object.keys(userAnswers).length;
+            const totalQuestions = examData.questions.length;
+            
+            if (answeredCount === totalQuestions) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+                submitBtn.innerHTML = `✅ إرسال الامتحان (${answeredCount}/${totalQuestions})`;
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.6';
+                submitBtn.style.cursor = 'not-allowed';
+                submitBtn.innerHTML = `⏳ أجب على جميع الأسئلة (${answeredCount}/${totalQuestions})`;
             }
+        }
+
+        // ربط زر الإرسال بدالة submitExam
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            console.log('Submit button clicked');
+            console.log('Button disabled:', document.getElementById('submitBtn').disabled);
+            console.log('User answers:', userAnswers);
+            console.log('Total questions:', examData?.questions?.length);
             submitExam();
         });
 
         async function submitExam() {
+            console.log('submitExam function called');
             clearInterval(timerInterval);
             
+            // 1. التحقق من الإجابة على جميع الأسئلة
+            const unansweredQuestions = [];
+            for (let i = 0; i < examData.questions.length; i++) {
+                if (userAnswers[i] === undefined || userAnswers[i] === null) {
+                    unansweredQuestions.push(i + 1);
+                }
+            }
+            
+            if (unansweredQuestions.length > 0) {
+                alert(`⚠️ يجب الإجابة على جميع الأسئلة!\n\nالأسئلة المتبقية: ${unansweredQuestions.join(', ')}`);
+                
+                // تمييز الأسئلة غير المجاب عليها
+                unansweredQuestions.forEach(qNum => {
+                    const questionCard = document.querySelectorAll('.question-card')[qNum - 1];
+                    if (questionCard) {
+                        questionCard.style.border = '3px solid #f59e0b';
+                        questionCard.style.animation = 'shake 0.5s';
+                        setTimeout(() => {
+                            questionCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
+                    }
+                });
+                
+                // إعادة تشغيل المؤقت
+                startTimer();
+                return; // منع الإرسال
+            }
+            
+            // 2. حساب النتيجة
             let correct = 0;
             let incorrect = 0;
 
@@ -512,12 +577,12 @@
             const percentage = Math.round((correct / examData.questions.length) * 100);
             const passed = percentage >= 50; // Pass threshold is 50%
 
-            // Save exam result to Firestore
+            // 3. حفظ النتيجة في Firestore
             try {
                 const user = auth.currentUser;
                 if (user) {
-                    const resultRef = window.firebase.firestore.doc(db, 'examResults', `${user.uid}_${examId}_${Date.now()}`);
-                    await window.firebase.firestore.setDoc(resultRef, {
+                    const resultRef = doc(db, 'examResults', `${user.uid}_${examId}_${Date.now()}`);
+                    await setDoc(resultRef, {
                         userId: user.uid,
                         examId: examId,
                         examTitle: examData.title,
@@ -533,20 +598,22 @@
                     console.log('✅ Exam result saved to Firestore');
                 }
             } catch (error) {
-                console.error('Error saving exam result:', error);
+                console.error('❌ Error saving exam result:', error);
+                alert('حدث خطأ في حفظ النتيجة. يرجى المحاولة مرة أخرى.');
+                return;
             }
 
-            // Hide exam, show results
+            // 4. إخفاء الامتحان وعرض النتائج
             document.getElementById('examContent').style.display = 'none';
             document.getElementById('resultsContainer').classList.add('show');
 
-            // Display results
+            // 5. عرض النتيجة
             document.getElementById('scorePercentage').textContent = `${percentage}%`;
             document.getElementById('correctAnswers').textContent = correct;
             document.getElementById('incorrectAnswers').textContent = incorrect;
             document.getElementById('totalQuestions').textContent = examData.questions.length;
 
-            // Set score circle color
+            // 6. تلوين دائرة النتيجة
             const scoreCircle = document.getElementById('scoreCircle');
             scoreCircle.classList.remove('excellent', 'good', 'fair', 'poor');
             if (percentage >= 90) scoreCircle.classList.add('excellent');
@@ -554,7 +621,7 @@
             else if (percentage >= 50) scoreCircle.classList.add('fair');
             else scoreCircle.classList.add('poor');
 
-            // Show answer review
+            // 7. عرض مراجعة الإجابات
             const reviewContainer = document.getElementById('reviewAnswers');
             reviewContainer.innerHTML = examData.questions.map((q, index) => {
                 const userAnswer = userAnswers[index];
@@ -573,6 +640,17 @@
                     </div>
                 `;
             }).join('');
+            
+            // 8. عرض رسالة تحفيزية
+            if (passed) {
+                setTimeout(() => {
+                    alert(`🎉 مبروك! لقد نجحت في الامتحان بنسبة ${percentage}%`);
+                }, 500);
+            } else {
+                setTimeout(() => {
+                    alert(`💪 لا تستسلم! حاول مرة أخرى. نسبتك: ${percentage}%`);
+                }, 500);
+            }
         }
 
         // Load exam on page load

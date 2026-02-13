@@ -22,9 +22,6 @@
 .footer-container {
     max-width: 1400px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 3rem;
     margin-bottom: 3rem;
 }
 

@@ -1,9 +1,0 @@
-{
-  "name": "netlify-functions",
-  "version": "1.0.0",
-  "description": "Netlify Functions for Firebase integration",
-  "main": "index.js",
-  "dependencies": {
-    "firebase-admin": "^11.11.1"
-  }
-}

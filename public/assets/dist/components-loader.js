@@ -7,16 +7,13 @@
 
     function getBasePaths() {
         var pathname = window.location.pathname || '';
-        var pagesIndex = pathname.indexOf('/pages/');
-        var prefix = pagesIndex !== -1 ? pathname.slice(0, pagesIndex + 1) : '/public/';
-        var pagesBase = prefix + 'pages/';
-        var assetsBase = prefix + 'assets/';
-        var componentsBase = prefix + 'components/';
+        var isInPages = pathname.indexOf('/pages/') !== -1;
+        
+        // استخدام absolute paths من الـ root
         return {
-            base: pagesBase,
-            home: pagesBase + 'index.html',
-            assetsBase: assetsBase,
-            componentsBase: componentsBase
+            base: '/public/pages/',
+            home: '/index.html',
+            componentsBase: isInPages ? '../components/' : 'public/components/'
         };
     }
 

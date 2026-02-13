@@ -441,6 +441,252 @@
         .materials-content.active {
             display: block;
         }
+
+        /* Enhanced Student Cards Styling */
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .student-card-enhanced {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.8));
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 20px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .student-card-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .student-card-enhanced:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: #3b82f6;
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.4);
+        }
+
+        .student-card-enhanced:hover::before {
+            opacity: 1;
+        }
+
+        .student-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .student-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .avatar-icon {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .student-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .student-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin: 0 0 0.25rem 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .student-email {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .student-status {
+            padding: 0.375rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-inactive {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .student-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            border-color: #3b82f6;
+            background: rgba(15, 23, 42, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .stat-details {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+
+        .stat-videos .stat-value {
+            color: #3b82f6;
+        }
+
+        .stat-exams .stat-value {
+            color: #10b981;
+        }
+
+        .stat-score .stat-value {
+            color: #a78bfa;
+        }
+
+        .student-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .footer-icon {
+            font-size: 1rem;
+        }
+
+        .footer-text {
+            flex: 1;
+        }
+
+        .student-action {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .student-card-enhanced:hover .student-action {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border-color: #3b82f6;
+        }
+
+        .action-text {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .action-arrow {
+            font-size: 1.25rem;
+            color: #3b82f6;
+            transition: transform 0.3s ease;
+        }
+
+        .student-card-enhanced:hover .action-arrow {
+            transform: translateX(-4px);
+        }
+
+        @media (max-width: 768px) {
+            .students-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .student-stats {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body class="dashboard-page">
@@ -626,7 +872,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, setDoc, getDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase config
         const firebaseConfig = {
@@ -655,6 +901,15 @@
         window.firebaseDeleteDoc = deleteDoc;
         window.firebaseDoc = doc;
         window.firebaseSetDoc = setDoc;
+        window.firebaseGetDoc = getDoc;
+        window.firebaseQuery = query;
+        window.firebaseWhere = where;
+        window.firebaseOrderBy = orderBy;
+        
+        // Signal that Firebase is ready
+        window.firebaseReady = true;
+        window.dispatchEvent(new Event('firebaseReady'));
+        console.log('✅ Firebase initialized and ready');
     </script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1193,16 +1448,32 @@
 
             // Load Students Function - Enhanced with tracking
             async function loadStudents() {
-                console.log('Loading students...');
+                console.log('📊 Loading students...');
                 const studentsList = document.getElementById('studentsList');
-                if (!studentsList) return;
+                if (!studentsList) {
+                    console.error('❌ Students list element not found');
+                    return;
+                }
+                
+                studentsList.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #94a3b8;">⏳ جاري تحميل الطلاب...</div>';
                 
                 try {
+                    // Get Firebase instances
+                    const db = window.firebaseDb;
+                    const collection = window.firebaseCollection;
+                    const getDocs = window.firebaseGetDocs;
+                    const query = window.firebaseQuery;
+                    const where = window.firebaseWhere;
+                    
+                    if (!db || !collection || !getDocs) {
+                        throw new Error('Firebase not initialized');
+                    }
+                    
                     // Load all users from Firestore
-                    const usersSnapshot = await window.firebase.firestore.getDocs(
-                        window.firebase.firestore.collection(db, 'users')
-                    );
+                    const usersSnapshot = await getDocs(collection(db, 'users'));
                     const students = [];
+                    
+                    console.log('👥 Found users:', usersSnapshot.size);
                     
                     for (const userDoc of usersSnapshot.docs) {
                         const userData = userDoc.data();
@@ -1210,18 +1481,18 @@
                         // Only include students (not teachers)
                         if (userData.role !== 'teacher' && userData.role !== 'admin') {
                             // Get student's exam results
-                            const examResultsQuery = window.firebase.firestore.query(
-                                window.firebase.firestore.collection(db, 'examResults'),
-                                window.firebase.firestore.where('userId', '==', userDoc.id)
+                            const examResultsQuery = query(
+                                collection(db, 'examResults'),
+                                where('userId', '==', userDoc.id)
                             );
-                            const examResultsSnapshot = await window.firebase.firestore.getDocs(examResultsQuery);
+                            const examResultsSnapshot = await getDocs(examResultsQuery);
                             
                             // Get student's video watches
-                            const videoWatchesQuery = window.firebase.firestore.query(
-                                window.firebase.firestore.collection(db, 'videoWatches'),
-                                window.firebase.firestore.where('userId', '==', userDoc.id)
+                            const videoWatchesQuery = query(
+                                collection(db, 'videoWatches'),
+                                where('userId', '==', userDoc.id)
                             );
-                            const videoWatchesSnapshot = await window.firebase.firestore.getDocs(videoWatchesQuery);
+                            const videoWatchesSnapshot = await getDocs(videoWatchesQuery);
                             
                             // Calculate statistics
                             const totalExams = examResultsSnapshot.size;
@@ -1253,6 +1524,8 @@
                         }
                     }
                     
+                    console.log('✅ Loaded students:', students.length);
+                    
                     if (students.length === 0) {
                         studentsList.innerHTML = `
                             <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #94a3b8;">
@@ -1268,33 +1541,58 @@
                     students.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
                     
                     studentsList.innerHTML = students.map(student => `
-                        <div class="content-card" style="cursor: pointer;" onclick="viewStudentDetails('${student.id}')">
-                            <div class="card-header">
-                                <div>
-                                    <h3 style="color: #3b82f6; margin-bottom: 0.5rem;">👤 ${student.name}</h3>
-                                    <p style="color: #94a3b8; font-size: 0.9rem;">📧 ${student.email}</p>
+                        <div class="student-card-enhanced" onclick="viewStudentDetails('${student.id}')">
+                            <div class="student-card-header">
+                                <div class="student-avatar">
+                                    <span class="avatar-icon">👤</span>
                                 </div>
-                                <span class="badge ${student.status === 'نشط' ? 'badge-success' : 'badge-warning'}">${student.status}</span>
+                                <div class="student-info">
+                                    <h3 class="student-name">${student.name}</h3>
+                                    <p class="student-email">${student.email}</p>
+                                </div>
+                                <span class="student-status ${student.status === 'نشط' ? 'status-active' : 'status-inactive'}">${student.status}</span>
                             </div>
-                            <div class="card-body">
-                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin: 1rem 0;">
-                                    <div style="background: rgba(59, 130, 246, 0.1); padding: 0.75rem; border-radius: 8px;">
-                                        <div style="font-size: 1.5rem; font-weight: bold; color: #3b82f6;">${student.totalVideos}</div>
-                                        <div style="font-size: 0.875rem; color: #94a3b8;">فيديو مشاهد</div>
-                                    </div>
-                                    <div style="background: rgba(16, 185, 129, 0.1); padding: 0.75rem; border-radius: 8px;">
-                                        <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">${student.passedExams}/${student.totalExams}</div>
-                                        <div style="font-size: 0.875rem; color: #94a3b8;">امتحان ناجح</div>
+                            
+                            <div class="student-stats">
+                                <div class="stat-box stat-videos">
+                                    <div class="stat-icon">🎥</div>
+                                    <div class="stat-details">
+                                        <div class="stat-value">${student.totalVideos}</div>
+                                        <div class="stat-label">فيديو</div>
                                     </div>
                                 </div>
-                                <div style="background: rgba(139, 92, 246, 0.1); padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
-                                    <div style="font-size: 1.5rem; font-weight: bold; color: #a78bfa;">${student.averageScore}%</div>
-                                    <div style="font-size: 0.875rem; color: #94a3b8;">متوسط الدرجات</div>
+                                
+                                <div class="stat-box stat-exams">
+                                    <div class="stat-icon">📝</div>
+                                    <div class="stat-details">
+                                        <div class="stat-value">${student.passedExams}/${student.totalExams}</div>
+                                        <div class="stat-label">امتحان</div>
+                                    </div>
                                 </div>
-                                <div class="card-meta">
-                                    <span>📅 انضم: ${student.joinDate}</span>
-                                    <span>🕐 آخر نشاط: ${student.lastActivity}</span>
+                                
+                                <div class="stat-box stat-score">
+                                    <div class="stat-icon">⭐</div>
+                                    <div class="stat-details">
+                                        <div class="stat-value">${student.averageScore}%</div>
+                                        <div class="stat-label">المعدل</div>
+                                    </div>
                                 </div>
+                            </div>
+                            
+                            <div class="student-footer">
+                                <div class="footer-item">
+                                    <span class="footer-icon">📅</span>
+                                    <span class="footer-text">انضم: ${student.joinDate}</span>
+                                </div>
+                                <div class="footer-item">
+                                    <span class="footer-icon">🕐</span>
+                                    <span class="footer-text">آخر نشاط: ${student.lastActivity}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="student-action">
+                                <span class="action-text">عرض التفاصيل</span>
+                                <span class="action-arrow">←</span>
                             </div>
                         </div>
                     `).join('');
@@ -1305,14 +1603,14 @@
                         totalStudentsEl.textContent = students.length;
                     }
                     
-                    console.log('✅ Loaded students:', students.length);
-                    
                 } catch (error) {
-                    console.error('Error loading students:', error);
+                    console.error('❌ Error loading students:', error);
                     studentsList.innerHTML = `
                         <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #f87171;">
-                            <p>حدث خطأ في تحميل الطلاب</p>
-                            <p style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</p>
+                            <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+                            <p style="font-weight: bold;">حدث خطأ في تحميل الطلاب</p>
+                            <p style="font-size: 0.875rem; margin-top: 0.5rem; color: #94a3b8;">${error.message}</p>
+                            <button onclick="loadStudents()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">🔄 إعادة المحاولة</button>
                         </div>
                     `;
                 }
@@ -1321,10 +1619,23 @@
             // View student details
             window.viewStudentDetails = async function(studentId) {
                 try {
+                    // Get Firebase instances
+                    const db = window.firebaseDb;
+                    const getDoc = window.firebaseGetDoc;
+                    const doc = window.firebaseDoc;
+                    const getDocs = window.firebaseGetDocs;
+                    const collection = window.firebaseCollection;
+                    const query = window.firebaseQuery;
+                    const where = window.firebaseWhere;
+                    
+                    if (!db || !getDoc || !doc) {
+                        throw new Error('Firebase not initialized');
+                    }
+                    
+                    console.log('📊 Loading student details for:', studentId);
+                    
                     // Get student data
-                    const studentDoc = await window.firebase.firestore.getDoc(
-                        window.firebase.firestore.doc(db, 'users', studentId)
-                    );
+                    const studentDoc = await getDoc(doc(db, 'users', studentId));
                     
                     if (!studentDoc.exists()) {
                         showToast('الطالب غير موجود', 'error');
@@ -1332,22 +1643,39 @@
                     }
                     
                     const student = studentDoc.data();
+                    console.log('✅ Student data loaded:', student);
                     
-                    // Get exam results
-                    const examResultsQuery = window.firebase.firestore.query(
-                        window.firebase.firestore.collection(db, 'examResults'),
-                        window.firebase.firestore.where('userId', '==', studentId),
-                        window.firebase.firestore.orderBy('completedAt', 'desc')
+                    // Get exam results (without orderBy to avoid index requirement)
+                    const examResultsQuery = query(
+                        collection(db, 'examResults'),
+                        where('userId', '==', studentId)
                     );
-                    const examResultsSnapshot = await window.firebase.firestore.getDocs(examResultsQuery);
+                    const examResultsSnapshot = await getDocs(examResultsQuery);
                     
-                    // Get video watches
-                    const videoWatchesQuery = window.firebase.firestore.query(
-                        window.firebase.firestore.collection(db, 'videoWatches'),
-                        window.firebase.firestore.where('userId', '==', studentId),
-                        window.firebase.firestore.orderBy('watchedAt', 'desc')
+                    // Sort exam results manually by completedAt (descending)
+                    const examResults = examResultsSnapshot.docs
+                        .map(doc => ({ id: doc.id, ...doc.data() }))
+                        .sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+                    
+                    console.log('✅ Exam results loaded:', examResults.length);
+                    
+                    // Get video watches (without orderBy to avoid index requirement)
+                    const videoWatchesQuery = query(
+                        collection(db, 'videoWatches'),
+                        where('userId', '==', studentId)
                     );
-                    const videoWatchesSnapshot = await window.firebase.firestore.getDocs(videoWatchesQuery);
+                    const videoWatchesSnapshot = await getDocs(videoWatchesQuery);
+                    
+                    // Sort video watches manually by watchedAt (descending)
+                    const videoWatches = videoWatchesSnapshot.docs
+                        .map(doc => ({ id: doc.id, ...doc.data() }))
+                        .sort((a, b) => {
+                            const dateA = a.watchedAt?.toDate ? a.watchedAt.toDate() : new Date(a.watchedAt);
+                            const dateB = b.watchedAt?.toDate ? b.watchedAt.toDate() : new Date(b.watchedAt);
+                            return dateB - dateA;
+                        });
+                    
+                    console.log('✅ Video watches loaded:', videoWatches.length);
                     
                     // Create modal
                     const modal = document.createElement('div');
@@ -1371,16 +1699,16 @@
                             <!-- Statistics -->
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                                 <div style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 12px; text-align: center;">
-                                    <div style="font-size: 2rem; font-weight: bold; color: #3b82f6;">${videoWatchesSnapshot.size}</div>
+                                    <div style="font-size: 2rem; font-weight: bold; color: #3b82f6;">${videoWatches.length}</div>
                                     <div style="color: #94a3b8; font-size: 0.875rem;">فيديو مشاهد</div>
                                 </div>
                                 <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 12px; text-align: center;">
-                                    <div style="font-size: 2rem; font-weight: bold; color: #10b981;">${examResultsSnapshot.size}</div>
+                                    <div style="font-size: 2rem; font-weight: bold; color: #10b981;">${examResults.length}</div>
                                     <div style="color: #94a3b8; font-size: 0.875rem;">امتحان محلول</div>
                                 </div>
                                 <div style="background: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 12px; text-align: center;">
                                     <div style="font-size: 2rem; font-weight: bold; color: #a78bfa;">
-                                        ${examResultsSnapshot.size > 0 ? Math.round(examResultsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().score || 0), 0) / examResultsSnapshot.size) : 0}%
+                                        ${examResults.length > 0 ? Math.round(examResults.reduce((sum, r) => sum + (r.score || 0), 0) / examResults.length) : 0}%
                                     </div>
                                     <div style="color: #94a3b8; font-size: 0.875rem;">متوسط الدرجات</div>
                                 </div>
@@ -1389,10 +1717,9 @@
                             <!-- Exam Results -->
                             <div style="margin-bottom: 2rem;">
                                 <h3 style="color: #3b82f6; margin-bottom: 1rem;">📝 نتائج الامتحانات</h3>
-                                ${examResultsSnapshot.empty ? 
+                                ${examResults.length === 0 ? 
                                     '<p style="color: #94a3b8; text-align: center; padding: 1rem;">لم يحل أي امتحان بعد</p>' :
-                                    examResultsSnapshot.docs.map(doc => {
-                                        const result = doc.data();
+                                    examResults.map(result => {
                                         return `
                                             <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border-right: 4px solid ${result.passed ? '#10b981' : '#ef4444'};">
                                                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
@@ -1421,17 +1748,17 @@
                             <!-- Video Watches -->
                             <div>
                                 <h3 style="color: #3b82f6; margin-bottom: 1rem;">🎥 الفيديوهات المشاهدة</h3>
-                                ${videoWatchesSnapshot.empty ? 
+                                ${videoWatches.length === 0 ? 
                                     '<p style="color: #94a3b8; text-align: center; padding: 1rem;">لم يشاهد أي فيديو بعد</p>' :
-                                    videoWatchesSnapshot.docs.slice(0, 10).map(doc => {
-                                        const watch = doc.data();
+                                    videoWatches.slice(0, 10).map(watch => {
+                                        const watchDate = watch.watchedAt?.toDate ? watch.watchedAt.toDate() : new Date(watch.watchedAt);
                                         return `
                                             <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border-right: 4px solid #3b82f6;">
                                                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                                                     <div style="flex: 1; min-width: 200px;">
                                                         <h4 style="color: #f1f5f9; margin-bottom: 0.25rem;">${watch.videoTitle}</h4>
                                                         <p style="color: #94a3b8; font-size: 0.875rem;">
-                                                            📅 ${watch.watchedAt ? new Date(watch.watchedAt.toDate()).toLocaleDateString('ar-EG') : 'غير محدد'}
+                                                            📅 ${watchDate.toLocaleDateString('ar-EG')}
                                                         </p>
                                                     </div>
                                                     <span class="badge badge-success">✅ مكتمل</span>
@@ -1440,7 +1767,7 @@
                                         `;
                                     }).join('')
                                 }
-                                ${videoWatchesSnapshot.size > 10 ? `<p style="color: #94a3b8; text-align: center; margin-top: 1rem; font-size: 0.875rem;">وأكثر من ${videoWatchesSnapshot.size - 10} فيديو آخر...</p>` : ''}
+                                ${videoWatches.length > 10 ? `<p style="color: #94a3b8; text-align: center; margin-top: 1rem; font-size: 0.875rem;">وأكثر من ${videoWatches.length - 10} فيديو آخر...</p>` : ''}
                             </div>
                             
                             <div class="form-actions" style="margin-top: 2rem;">
@@ -2518,7 +2845,15 @@
             // Load motivational messages
             async function loadMotivationalMessages() {
                 try {
-                    const snapshot = await window.firebase.firestore.collection(db, 'motivationalMessages').get();
+                    const db = window.firebaseDb;
+                    const collection = window.firebaseCollection;
+                    const getDocs = window.firebaseGetDocs;
+                    
+                    if (!db || !collection || !getDocs) {
+                        throw new Error('Firebase not initialized');
+                    }
+                    
+                    const snapshot = await getDocs(collection(db, 'motivationalMessages'));
                     motivationalMessages = [];
                     
                     snapshot.forEach(doc => {
@@ -2534,7 +2869,7 @@
                     renderMotivationalMessages();
                     console.log('✅ Loaded motivational messages:', motivationalMessages.length);
                 } catch (error) {
-                    console.error('Error loading motivational messages:', error);
+                    console.error('❌ Error loading motivational messages:', error);
                     showToast('خطأ في تحميل الرسائل التحفيزية', 'error');
                 }
             }
@@ -2627,22 +2962,27 @@
                         }
                         
                         try {
+                            const db = window.firebaseDb;
+                            const collection = window.firebaseCollection;
+                            const addDoc = window.firebaseAddDoc;
+                            
+                            if (!db || !collection || !addDoc) {
+                                throw new Error('Firebase not initialized');
+                            }
+                            
                             const newMessage = {
                                 message: message,
                                 createdAt: new Date().toISOString(),
                                 active: true
                             };
                             
-                            await window.firebase.firestore.addDoc(
-                                window.firebase.firestore.collection(db, 'motivationalMessages'),
-                                newMessage
-                            );
+                            await addDoc(collection(db, 'motivationalMessages'), newMessage);
                             
-                            showToast('تم إضافة الرسالة التحفيزية بنجاح!', 'success');
+                            showToast('✅ تم إضافة الرسالة التحفيزية بنجاح!', 'success');
                             closeModal();
                             await loadMotivationalMessages();
                         } catch (error) {
-                            console.error('Error adding motivational message:', error);
+                            console.error('❌ Error adding motivational message:', error);
                             showToast('خطأ في إضافة الرسالة: ' + error.message, 'error');
                         }
                     });
@@ -2664,14 +3004,20 @@
                 }
                 
                 try {
-                    await window.firebase.firestore.deleteDoc(
-                        window.firebase.firestore.doc(db, 'motivationalMessages', messageId)
-                    );
+                    const db = window.firebaseDb;
+                    const doc = window.firebaseDoc;
+                    const deleteDoc = window.firebaseDeleteDoc;
                     
-                    showToast('تم حذف الرسالة التحفيزية بنجاح', 'success');
+                    if (!db || !doc || !deleteDoc) {
+                        throw new Error('Firebase not initialized');
+                    }
+                    
+                    await deleteDoc(doc(db, 'motivationalMessages', messageId));
+                    
+                    showToast('✅ تم حذف الرسالة التحفيزية بنجاح', 'success');
                     await loadMotivationalMessages();
                 } catch (error) {
-                    console.error('Error deleting motivational message:', error);
+                    console.error('❌ Error deleting motivational message:', error);
                     showToast('خطأ في حذف الرسالة: ' + error.message, 'error');
                 }
             };

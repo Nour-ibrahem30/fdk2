@@ -90,9 +90,17 @@
   @include button-base;
   @include gradient-primary;
   color: white;
+  box-shadow: 0 4px 12px rgba($accent-primary, 0.2);
   
   &:hover {
-    box-shadow: 0 8px 20px rgba($accent-primary, 0.4);
+    box-shadow: 0 8px 24px rgba($accent-primary, 0.5);
+    filter: brightness(1.15);
+    transform: translateY(-3px);
+  }
+  
+  &:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($accent-primary, 0.4);
   }
 }
 

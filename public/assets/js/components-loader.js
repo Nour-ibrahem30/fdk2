@@ -8,9 +8,11 @@
     function getBasePaths() {
         var pathname = window.location.pathname || '';
         var isInPages = pathname.indexOf('/pages/') !== -1;
+        
+        // استخدام absolute paths من الـ root
         return {
-            base: isInPages ? '' : 'public/pages/',
-            home: isInPages ? '../../index.html' : 'index.html',
+            base: '/public/pages/',
+            home: '/index.html',
             componentsBase: isInPages ? '../components/' : 'public/components/'
         };
     }
