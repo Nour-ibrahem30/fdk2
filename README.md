@@ -137,71 +137,6 @@
 - حماية من هجمات CSRF و XSS
 - Rate Limiting لمنع الهجمات
 
-### 🔒 Firestore Security Rules
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    
-    // دالة للتحقق من دور المستخدم
-    function isTeacher() {
-      return request.auth != null && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
-    }
-    
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    // الفيديوهات
-    match /videos/{videoId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
-    }
-    
-    // الامتحانات
-    match /exams/{examId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
-    }
-    
-    // الملاحظات
-    match /notes/{noteId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
-    }
-    
-    // المواد الدراسية
-    match /materials/{materialId} {
-      allow read: if isAuthenticated();
-      allow write: if isTeacher();
-    }
-    
-    // ملاحظات الفيديو (خاصة بكل طالب)
-    match /videoNotes/{noteId} {
-      allow read, write: if isAuthenticated() && 
-                            request.auth.uid == resource.data.userId;
-    }
-    
-    // نتائج الامتحانات
-    match /examResults/{resultId} {
-      allow read: if isAuthenticated() && 
-                     (request.auth.uid == resource.data.userId || isTeacher());
-      allow write: if isAuthenticated() && 
-                      request.auth.uid == resource.data.userId;
-    }
-    
-    // بيانات المستخدمين
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if request.auth.uid == userId || isTeacher();
-    }
-  }
-}
-```
-
----
 
 ## 📊 آلية عمل المنصة
 
@@ -243,180 +178,7 @@ service cloud.firestore {
 
 ### 🗄️ هيكل قاعدة البيانات (Firestore)
 
-#### Collections الرئيسية:
 
-**1. users** - بيانات المستخدمين
-```javascript
-{
-  uid: "user123",
-  email: "student@example.com",
-  name: "أحمد محمد",
-  role: "student", // أو "teacher"
-  grade: "الثالث الثانوي",
-  createdAt: Timestamp,
-  lastLogin: Timestamp
-}
-```
-
-**2. videos** - الفيديوهات التعليمية
-```javascript
-{
-  id: "video123",
-  title: "مقدمة في الفلسفة",
-  videoUrl: "https://youtube.com/watch?v=...",
-  source: "youtube", // أو "uploaded"
-  duration: 45, // بالدقائق
-  notes: "وصف الفيديو",
-  grade: "الأول الثانوي",
-  subject: "الفلسفة",
-  views: 150,
-  createdAt: Timestamp,
-  createdBy: "teacher_uid"
-}
-```
-
-**3. exams** - الامتحانات
-```javascript
-{
-  id: "exam123",
-  title: "امتحان الوحدة الأولى",
-  type: "integrated", // أو "external"
-  examUrl: "https://forms.google.com/...", // للامتحانات الخارجية
-  questions: [ // للامتحانات المدمجة
-    {
-      question: "الفلسفة هي علم التفكير",
-      type: "true-false",
-      correctAnswer: "true",
-      points: 5
-    },
-    {
-      question: "من هو أبو الفلسفة؟",
-      type: "multiple-choice",
-      options: ["سقراط", "أفلاطون", "أرسطو"],
-      correctAnswer: "سقراط",
-      points: 10
-    }
-  ],
-  duration: 60, // بالدقائق
-  totalPoints: 100,
-  grade: "الثاني الثانوي",
-  createdAt: Timestamp
-}
-```
-
-**4. videoNotes** - ملاحظات الطلاب على الفيديوهات
-```javascript
-{
-  id: "note123",
-  userId: "student_uid",
-  videoId: "video123",
-  videoTitle: "مقدمة في الفلسفة",
-  notes: "ملاحظات الطالب هنا...",
-  createdAt: Timestamp,
-  updatedAt: Timestamp
-}
-```
-
-**5. examResults** - نتائج الامتحانات
-```javascript
-{
-  id: "result123",
-  userId: "student_uid",
-  examId: "exam123",
-  examTitle: "امتحان الوحدة الأولى",
-  score: 85,
-  totalPoints: 100,
-  percentage: 85,
-  answers: [
-    { question: "...", userAnswer: "...", correctAnswer: "...", isCorrect: true }
-  ],
-  completedAt: Timestamp
-}
-```
-
-**6. notes** - ملاحظات المعلم
-```javascript
-{
-  id: "note123",
-  title: "ملاحظة مهمة",
-  content: "محتوى الملاحظة",
-  type: "important", // أو "general", "urgent"
-  createdAt: Timestamp
-}
-```
-
-**7. materials** - المواد الدراسية
-```javascript
-{
-  id: "material123",
-  title: "مذكرة الوحدة الأولى",
-  fileUrl: "https://storage.googleapis.com/...",
-  fileSize: "2.5 MB",
-  grade: "الثالث الثانوي",
-  subject: "المنطق",
-  description: "وصف المذكرة",
-  createdAt: Timestamp
-}
-```
-
-**8. videoWatches** - تتبع مشاهدة الفيديوهات
-```javascript
-{
-  id: "watch123",
-  userId: "student_uid",
-  videoId: "video123",
-  videoTitle: "مقدمة في الفلسفة",
-  watchedAt: Timestamp,
-  completed: true,
-  duration: 45
-}
-```
-
----
-
-## 🚀 التثبيت والإعداد
-
-### المتطلبات الأساسية
-
-- **Node.js** (v14 أو أحدث) - [تحميل](https://nodejs.org/)
-- **npm** (يأتي مع Node.js)
-- **حساب Firebase** - [إنشاء حساب](https://firebase.google.com/)
-- **متصفح حديث** (Chrome, Firefox, Edge, Safari)
-- **محرر نصوص** (VS Code, Sublime Text, إلخ)
-
-### خطوات التثبيت التفصيلية
-
-#### 1️⃣ استنساخ المشروع
-
-```bash
-# استنساخ المشروع من GitHub
-git clone https://github.com/your-username/philosophy-platform.git
-
-# الانتقال إلى مجلد المشروع
-cd philosophy-platform
-```
-
-#### 2️⃣ تثبيت الحزم
-
-```bash
-# تثبيت جميع الحزم المطلوبة
-npm install
-
-# أو باستخدام yarn
-yarn install
-```
-
-الحزم المثبتة:
-- `firebase` - للتعامل مع Firebase
-- `dotenv` - لإدارة المتغيرات البيئية
-- `sass` - لتحويل SCSS إلى CSS
-- `typescript` - للتطوير بـ TypeScript
-- `nodemon` - لإعادة تشغيل السيرفر تلقائياً
-- `concurrently` - لتشغيل عدة أوامر معاً
-
-#### 3️⃣ إعداد Firebase
-
-**أ. إنشاء مشروع Firebase:**
 1. اذهب إلى [Firebase Console](https://console.firebase.google.com/)
 2. اضغط "Add project" أو "إضافة مشروع"
 3. أدخل اسم المشروع: "Philosophy Platform"
@@ -444,97 +206,7 @@ yarn install
 4. أدخل اسم التطبيق: "Philosophy Web App"
 5. انسخ كود الإعدادات
 
-**هـ. إضافة الإعدادات للمشروع:**
 
-أنشئ ملف `.env` في المجلد الرئيسي:
-```env
-FIREBASE_API_KEY=your_api_key_here
-FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-FIREBASE_MESSAGING_SENDER_ID=123456789
-FIREBASE_APP_ID=1:123456789:web:abcdef
-```
-
-أو عدّل ملف `public/assets/js/firebase-config-secure.js`:
-```javascript
-const firebaseConfig = {
-    apiKey: "your_api_key_here",
-    authDomain: "your_project.firebaseapp.com",
-    projectId: "your_project_id",
-    storageBucket: "your_project.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef"
-};
-```
-
-#### 4️⃣ إنشاء حساب المعلم
-
-**أ. في Firebase Console > Authentication:**
-1. اضغط "Add user"
-2. أدخل البريد الإلكتروني: `teacher@example.com`
-3. أدخل كلمة المرور: `YourSecurePassword123`
-4. اضغط "Add user"
-5. انسخ الـ UID الخاص بالمستخدم
-
-**ب. في Firestore Database:**
-1. اذهب إلى "Firestore Database"
-2. اضغط "Start collection"
-3. أدخل Collection ID: `users`
-4. اضغط "Next"
-5. أدخل Document ID: الصق الـ UID المنسوخ
-6. أضف الحقول التالية:
-
-```
-Field: email       | Type: string | Value: teacher@example.com
-Field: name        | Type: string | Value: محمد ناصر
-Field: role        | Type: string | Value: teacher
-Field: createdAt   | Type: timestamp | Value: (اضغط على الساعة)
-```
-
-7. اضغط "Save"
-
-#### 5️⃣ تطبيق Security Rules
-
-**أ. انسخ القواعد من ملف `firestore.rules`**
-
-**ب. في Firebase Console:**
-1. اذهب إلى "Firestore Database"
-2. اختر تبويب "Rules"
-3. الصق القواعد المنسوخة
-4. اضغط "Publish"
-
-#### 6️⃣ تشغيل المشروع
-
-```bash
-# تشغيل السيرفر
-npm start
-
-# أو للتطوير مع إعادة التشغيل التلقائي
-npm run dev
-
-# أو تشغيل مباشر
-node server.js
-```
-
-السيرفر سيعمل على: `http://localhost:8000`
-
-#### 7️⃣ فتح المتصفح
-
-افتح المتصفح واذهب إلى:
-```
-http://localhost:8000
-```
-
-**تسجيل الدخول:**
-- البريد الإلكتروني: `teacher@example.com`
-- كلمة المرور: `YourSecurePassword123`
-
----
-
-## 📁 هيكل المشروع التفصيلي
-
-```
 philosophy-platform/
 │
 ├── 📁 public/                          # الملفات العامة
@@ -775,120 +447,6 @@ async function rateVideo(videoId, rating) {
 }
 ```
 
----
-
-## 🔧 استكشاف الأخطاء وحلها
-
-### المشاكل الشائعة والحلول
-
-#### ❌ المشكلة: المحتوى لا يظهر للطلاب
-
-**الأسباب المحتملة:**
-1. Security Rules غير مطبقة بشكل صحيح
-2. الطالب غير مسجل دخول
-3. خطأ في الاتصال بـ Firebase
-
-**الحل:**
-```bash
-# 1. تحقق من Security Rules في Firebase Console
-# 2. افتح Console في المتصفح (F12)
-# 3. ابحث عن أخطاء في Console
-# 4. تأكد من تسجيل الدخول:
-console.log(auth.currentUser);
-```
-
-#### ❌ المشكلة: خطأ 429 (Too Many Requests)
-
-**السبب:** تجاوز حد الطلبات المسموح به
-
-**الحل:**
-```javascript
-// النظام يستخدم Cache تلقائياً
-// مدة الـ Cache: 5 دقائق
-// إذا استمرت المشكلة:
-// 1. انتظر 15 دقيقة
-// 2. أو زد حد الطلبات في server.js:
-
-const RATE_LIMIT_MAX = 200; // بدلاً من 100
-```
-
-#### ❌ المشكلة: المعلم لا يمكنه إضافة محتوى
-
-**الأسباب المحتملة:**
-1. `role` ليس "teacher" في Firestore
-2. Security Rules غير صحيحة
-
-**الحل:**
-```bash
-# 1. تحقق من Firestore > users > [teacher_uid]
-# 2. تأكد من: role: "teacher"
-# 3. تحقق من Security Rules
-# 4. أعد تسجيل الدخول
-```
-
-#### ❌ المشكلة: الفيديو لا يعمل
-
-**الأسباب المحتملة:**
-1. رابط YouTube غير صحيح
-2. الفيديو محذوف أو خاص
-
-**الحل:**
-```javascript
-// تأكد من صيغة الرابط:
-// ✅ صحيح: https://www.youtube.com/watch?v=VIDEO_ID
-// ✅ صحيح: https://youtu.be/VIDEO_ID
-// ❌ خطأ: https://www.youtube.com/embed/VIDEO_ID
-```
-
-#### ❌ المشكلة: الملاحظات لا تُحفظ
-
-**السبب:** مشكلة في الاتصال أو الصلاحيات
-
-**الحل:**
-```bash
-# 1. افتح Console (F12)
-# 2. ابحث عن أخطاء
-# 3. تحقق من Security Rules لـ videoNotes
-# 4. تأكد من تسجيل الدخول
-```
-
-#### ❌ المشكلة: خطأ في تحميل الصفحة
-
-**الحل:**
-```bash
-# 1. امسح Cache المتصفح (Ctrl + Shift + Delete)
-# 2. أعد تشغيل السيرفر
-npm start
-# 3. افتح الصفحة في وضع Incognito
-```
-
-### أدوات التشخيص
-
-#### فحص الاتصال بـ Firebase
-```javascript
-// في Console المتصفح
-console.log('Firebase initialized:', firebase.apps.length > 0);
-console.log('Current user:', auth.currentUser);
-console.log('User role:', await getDoc(doc(db, 'users', auth.currentUser.uid)));
-```
-
-#### فحص Security Rules
-```javascript
-// حاول قراءة بيانات
-const testRead = await getDocs(collection(db, 'videos'));
-console.log('Can read videos:', !testRead.empty);
-
-// حاول الكتابة (للمعلم فقط)
-try {
-    await addDoc(collection(db, 'videos'), { test: true });
-    console.log('Can write videos: true');
-} catch (error) {
-    console.log('Can write videos: false', error.message);
-}
-```
-
----
-
 ## 📱 التصميم المتجاوب (Responsive Design)
 
 المنصة مصممة للعمل على جميع الأجهزة:
@@ -921,274 +479,6 @@ try {
 - تحميل أسرع للصور
 
 ---
-
-## 🔒 الأمان وأفضل الممارسات
-
-### نصائح الأمان
-
-1. **لا تشارك بيانات Firebase مع أحد**
-   - احفظ `.env` في `.gitignore`
-   - لا ترفع `firebase-config` على GitHub
-
-2. **استخدم كلمات مرور قوية**
-   - 12 حرف على الأقل
-   - أحرف كبيرة وصغيرة وأرقام ورموز
-
-3. **فعّل Two-Factor Authentication**
-   - في Firebase Console
-   - في حساب Google
-
-4. **راجع Security Rules بانتظام**
-   - تأكد من عدم السماح بالكتابة للجميع
-   - استخدم `test mode` فقط للتطوير
-
-5. **احفظ نسخة احتياطية**
-   - صدّر Firestore بانتظام
-   - احفظ نسخة من الكود
-
-### أفضل الممارسات
-
-```javascript
-// ✅ جيد: استخدام try-catch
-try {
-    await addDoc(collection(db, 'videos'), data);
-} catch (error) {
-    console.error('Error:', error);
-    showToast('حدث خطأ', 'error');
-}
-
-// ❌ سيء: بدون معالجة الأخطاء
-await addDoc(collection(db, 'videos'), data);
-
-// ✅ جيد: التحقق من المصادقة
-if (!auth.currentUser) {
-    window.location.href = 'login.html';
-    return;
-}
-
-// ✅ جيد: استخدام Cache
-const cachedData = localStorage.getItem('videos');
-if (cachedData && Date.now() - cachedData.timestamp < 300000) {
-    return JSON.parse(cachedData.data);
-}
-```
-
----
-
-## 📊 الأداء والتحسين
-
-### تحسينات الأداء المطبقة
-
-1. **Lazy Loading للصور**
-   ```html
-   <img loading="lazy" src="image.jpg" alt="...">
-   ```
-
-2. **Cache للبيانات**
-   ```javascript
-   // Cache لمدة 5 دقائق
-   const CACHE_DURATION = 5 * 60 * 1000;
-   ```
-
-3. **تقليل حجم الملفات**
-   - CSS مضغوط (minified)
-   - JavaScript مضغوط
-   - الصور محسّنة
-
-4. **CDN للمكتبات**
-   ```html
-   <script src="https://cdn.jsdelivr.net/npm/..."></script>
-   ```
-
-5. **Rate Limiting**
-   ```javascript
-   // حد أقصى 100 طلب كل 15 دقيقة
-   const RATE_LIMIT_MAX = 100;
-   const RATE_LIMIT_WINDOW = 900000; // 15 دقيقة
-   ```
-
-### قياس الأداء
-
-```bash
-# استخدم Lighthouse في Chrome DevTools
-# أو
-npm run test:performance
-```
-
----
-
-## 🧪 الاختبارات (Testing)
-
-### تشغيل الاختبارات
-
-```bash
-# تشغيل جميع الاختبارات
-npm test
-
-# تشغيل الاختبارات مع المراقبة
-npm run test:watch
-
-# تشغيل الاختبارات مع تقرير التغطية
-npm run test:coverage
-```
-
-### كتابة اختبار جديد
-
-```javascript
-// tests/videos.test.js
-describe('Videos Service', () => {
-    test('should fetch all videos', async () => {
-        const videos = await getVideos();
-        expect(videos).toBeDefined();
-        expect(Array.isArray(videos)).toBe(true);
-    });
-    
-    test('should add new video', async () => {
-        const videoData = {
-            title: 'Test Video',
-            videoUrl: 'https://youtube.com/watch?v=test'
-        };
-        const result = await addVideo(videoData);
-        expect(result.id).toBeDefined();
-    });
-});
-```
-
----
-
-## 🚀 النشر (Deployment)
-
-### النشر على Vercel
-
-1. **تثبيت Vercel CLI**
-   ```bash
-   npm install -g vercel
-   ```
-
-2. **تسجيل الدخول**
-   ```bash
-   vercel login
-   ```
-
-3. **النشر**
-   ```bash
-   vercel --prod
-   ```
-
-4. **إعداد المتغيرات البيئية**
-   - اذهب إلى Vercel Dashboard
-   - اختر المشروع
-   - Settings > Environment Variables
-   - أضف متغيرات Firebase
-
-### النشر على Firebase Hosting
-
-1. **تثبيت Firebase CLI**
-   ```bash
-   npm install -g firebase-tools
-   ```
-
-2. **تسجيل الدخول**
-   ```bash
-   firebase login
-   ```
-
-3. **تهيئة المشروع**
-   ```bash
-   firebase init hosting
-   ```
-
-4. **النشر**
-   ```bash
-   firebase deploy --only hosting
-   ```
-
----
-
-## 📞 الدعم والمساعدة
-
-### الحصول على المساعدة
-
-1. **راجع هذا الملف أولاً** - معظم الإجابات موجودة هنا
-2. **افتح Console المتصفح** - ابحث عن رسائل الخطأ
-3. **راجع Firebase Console** - تحقق من الأخطاء والإحصائيات
-4. **ابحث في Issues** - قد يكون شخص آخر واجه نفس المشكلة
-
-### الإبلاغ عن مشكلة
-
-عند الإبلاغ عن مشكلة، قدم:
-- وصف المشكلة بالتفصيل
-- خطوات إعادة إنتاج المشكلة
-- لقطات شاشة (إن أمكن)
-- رسائل الخطأ من Console
-- نظام التشغيل والمتصفح
-
----
-
-## 📝 ملاحظات مهمة
-
-### للمعلم
-
-1. **النسخ الاحتياطي**
-   - صدّر Firestore بانتظام
-   - احفظ نسخة من الملفات المرفوعة
-
-2. **إدارة المحتوى**
-   - راجع المحتوى قبل النشر
-   - احذف المحتوى القديم غير المستخدم
-
-3. **التواصل مع الطلاب**
-   - استخدم الملاحظات للإعلانات المهمة
-   - راجع نتائج الامتحانات بانتظام
-
-### للطلاب
-
-1. **الحفاظ على الحساب**
-   - لا تشارك كلمة المرور
-   - سجّل الخروج بعد الانتهاء
-
-2. **استخدام الملاحظات**
-   - اكتب ملاحظاتك أثناء مشاهدة الفيديو
-   - راجع ملاحظاتك قبل الامتحان
-
-3. **حل الامتحانات**
-   - اقرأ الأسئلة بعناية
-   - راجع إجاباتك قبل الإرسال
-
----
-
-## 🎯 الخطط المستقبلية
-
-### الميزات القادمة
-
-- [ ] **نظام الإشعارات**
-  - إشعارات عند إضافة محتوى جديد
-  - تذكير بالامتحانات القادمة
-
-- [ ] **نظام الرسائل**
-  - رسائل مباشرة بين المعلم والطلاب
-  - مجموعات نقاش
-
-- [ ] **تقارير الأداء**
-  - تقارير تفصيلية لكل طالب
-  - رسوم بيانية للتقدم
-
-- [ ] **نظام الواجبات**
-  - إضافة واجبات منزلية
-  - تسليم الواجبات أونلاين
-  - تصحيح تلقائي
-
-- [ ] **تطبيق موبايل**
-  - تطبيق Android
-  - تطبيق iOS
-
-- [ ] **نظام التقييمات**
-  - تقييم الفيديوهات
-  - تقييم المواد الدراسية
-
-- [ ] **البث المباشر**
-  - حصص مباشرة أونلاين
-  - تسجيل الحصص
 
 ---
 
