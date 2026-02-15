@@ -1,11 +1,13 @@
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBmJJ5_wZ8X9QX9X9X9X9X9X9X9X9X9X9X",
-  authDomain: "philosopher-platform.firebaseapp.com",
-  projectId: "philosopher-platform",
-  storageBucket: "philosopher-platform.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:65ef9206be0"
+  apiKey: "AIzaSyAU0CCiQNrPEYpTNU4rAwmOmPUZnjb2FoU",
+  authDomain: "a-platform-for-learning.firebaseapp.com",
+  projectId: "a-platform-for-learning",
+  storageBucket: "a-platform-for-learning.firebasestorage.app",
+  messagingSenderId: "764579707883",
+  appId: "1:764579707883:web:5456e2348354cc58fab7ae",
+  measurementId: "G-4P972FP416",
+  databaseURL: "https://a-platform-for-learning-default-rtdb.firebaseio.com"
 };
 
 // Firebase variables
@@ -350,14 +352,23 @@ async function loadExamResults() {
   
   try {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) {
+      console.log('No user logged in');
+      return;
+    }
+    
+    console.log('Loading exam results for user:', user.uid);
     
     // تحميل نتائج الامتحانات من Firebase
-    const resultsQuery = window.firebase.firestore()
-      .collection('examResults')
-      .where('userId', '==', user.uid);
+    const resultsRef = window.firebase.firestore.collection(db, 'examResults');
+    const resultsQuery = window.firebase.firestore.query(
+      resultsRef,
+      window.firebase.firestore.where('userId', '==', user.uid)
+    );
     
-    const resultsSnapshot = await resultsQuery.get();
+    const resultsSnapshot = await window.firebase.firestore.getDocs(resultsQuery);
+    
+    console.log('Exam results found:', resultsSnapshot.size);
     
     if (resultsSnapshot.empty) {
       container.innerHTML = `
@@ -414,9 +425,11 @@ async function loadExamResults() {
     console.error('Error loading exam results:', error);
     container.innerHTML = `
       <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #f87171;">
-        <p>حدث خطأ في تحميل النتائج</p>
+        <p>حدث خطأ في تحميل النتائج: ${error.message}</p>
       </div>
     `;
+  }
+}
   }
 }
 

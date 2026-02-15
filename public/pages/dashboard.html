@@ -10,6 +10,7 @@
     <meta name="robots" content="noindex, nofollow">
     
     <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/components/navbar.css">
     <link rel="stylesheet" href="../assets/css/pages_style/dashboard.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <style>
@@ -19,7 +20,7 @@
             left: 0;
             width: 100%;
             height: 150px;
-            z-index: 1;
+            z-index: 0;
             pointer-events: none;
         }
 
@@ -46,7 +47,8 @@
         
         .dashboard-layout,
         .dashboard-header,
-        .dashboard-main {
+        .dashboard-main,
+        .dashboard-sidebar {
             position: relative;
             z-index: 10;
         }
@@ -680,11 +682,6 @@
     </style>
 </head>
 <body class="dashboard-page">
-    <!-- Removed Three.js canvas for better performance -->
-    <div class="waves">
-        <div class="wave"></div>
-        <div class="wave"></div>
-    </div>
     <a href="#main-content" class="sr-only">تخطى إلى المحتوى الرئيسي</a>
     <div id="navbar-placeholder"></div>
 
@@ -854,6 +851,12 @@
         </main>
     </div>
 
+    <!-- Waves Animation - Moved to end for proper z-index -->
+    <div class="waves">
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
     <div id="footer-placeholder"></div>
 
     <script src="../assets/js/components-loader.js"></script>
@@ -902,9 +905,8 @@
         console.log('✅ Firebase initialized and ready');
     </script>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // 🔐 Authenticationop
+        // 🔐 Authentication
         function checkDashboardAuth() {
             console.log('Checking dashboard authentication...');
             
@@ -964,7 +966,7 @@
                 }, 2000);
                 return false;
             }
-      }
+        }
         
         // Run authentication check immediately
         if (!checkDashboardAuth()) {
@@ -1029,7 +1031,7 @@
                         flex-shrink: 0;
                     }
                     
-                 .toast-message {
+                    .toast-message {
                         flex: 1;
                         font-size: 0.95rem;
                     }
@@ -1079,79 +1081,6 @@
                 }
             }, duration);
         }
-
-        // Three.js Scene - Philosophy Brain Model
-        const canvas = document.getElementById('three-canvas');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        camera.position.z = 5;
-
-        // Create Brain
-        const brainGeometry = new THREE.IcosahedronGeometry(0.8, 1);
-        const brainMaterial = new THREE.MeshNormalMaterial({ wireframe: true, opacity: 0.3, transparent: true });
-        const brain = new THREE.Mesh(brainGeometry, brainMaterial);
-        scene.add(brain);
-
-        // Create Logic Symbols
-        const symbolGeometry = new THREE.OctahedronGeometry(0.25);
-        const symbolMaterial = new THREE.MeshNormalMaterial({ wireframe: false, opacity: 0.4, transparent: true });
-        
-        const symbols = [];
-        for (let i = 0; i < 6; i++) {
-            const symbol = new THREE.Mesh(symbolGeometry, symbolMaterial);
-            const angle = (i / 6) * Math.PI * 2;
-            symbol.position.x = Math.cos(angle) * 2;
-            symbol.position.y = Math.sin(angle) * 2;
-            symbols.push(symbol);
-            scene.add(symbol);
-        }
-
-        // Create Particles
-        const particlesGeometry = new THREE.BufferGeometry();
-        const particlesCount = 500;
-        const posArray = new Float32Array(particlesCount * 3);
-
-        for (let i = 0; i < particlesCount * 3; i++) {
-            posArray[i] = (Math.random() - 0.5) * 10;
-        }
-
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        const particlesMaterial = new THREE.PointsMaterial({ size: 0.02, color: 0x3b82f6, opacity: 0.6, transparent: true });
-        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particlesMesh);
-
-        // Animation
-        let time = 0;
-        function animate() {
-            requestAnimationFrame(animate);
-            time += 0.01;
-            
-            brain.rotation.x += 0.005;
-            brain.rotation.y += 0.005;
-            
-            symbols.forEach((symbol, i) => {
-                const angle = (i / 6) * Math.PI * 2 + time * 0.3;
-                symbol.position.x = Math.cos(angle) * 2;
-                symbol.position.y = Math.sin(angle) * 2;
-                symbol.rotation.x += 0.02;
-                symbol.rotation.y += 0.02;
-            });
-            
-            particlesMesh.rotation.y += 0.0005;
-            renderer.render(scene, camera);
-        }
-
-        animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
 
         // Dashboard Functionality
         document.addEventListener('DOMContentLoaded', async function() {

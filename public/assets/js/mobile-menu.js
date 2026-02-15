@@ -91,24 +91,11 @@
     function initNavigationMobileMenu() {
         const navMenu = document.querySelector('.nav-menu');
         const navbar = document.querySelector('.navbar');
+        const navToggle = document.querySelector('.nav-toggle');
         
-        if (!navMenu || !navbar) return;
-
-        // Check if toggle button already exists
-        let toggleBtn = navbar.querySelector('.nav-toggle');
-        
-        if (!toggleBtn) {
-            // Create mobile menu toggle button
-            toggleBtn = document.createElement('button');
-            toggleBtn.className = 'nav-toggle';
-            toggleBtn.innerHTML = '☰';
-            toggleBtn.setAttribute('aria-label', 'فتح القائمة');
-            
-            // Insert before nav-menu
-            const navContainer = navbar.querySelector('.nav-container');
-            if (navContainer) {
-                navContainer.appendChild(toggleBtn);
-            }
+        if (!navMenu || !navbar || !navToggle) {
+            console.log('⚠️ Navigation elements not found');
+            return;
         }
 
         // Create overlay for navigation
@@ -116,25 +103,16 @@
         if (!navOverlay) {
             navOverlay = document.createElement('div');
             navOverlay.className = 'nav-overlay';
-            navOverlay.style.cssText = `
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 98;
-            `;
             document.body.appendChild(navOverlay);
         }
 
         // Toggle menu
         function toggleNavMenu() {
             const isActive = navMenu.classList.toggle('active');
-            toggleBtn.innerHTML = isActive ? '✕' : '☰';
-            toggleBtn.setAttribute('aria-label', isActive ? 'إغلاق القائمة' : 'فتح القائمة');
-            navOverlay.style.display = isActive ? 'block' : 'none';
+            navToggle.classList.toggle('active');
+            navOverlay.classList.toggle('active');
+            navToggle.setAttribute('aria-expanded', isActive);
+            navToggle.setAttribute('aria-label', isActive ? 'إغلاق القائمة' : 'فتح القائمة');
             
             // Prevent body scroll when menu is open
             document.body.style.overflow = isActive ? 'hidden' : '';
@@ -143,18 +121,23 @@
         // Close menu
         function closeNavMenu() {
             navMenu.classList.remove('active');
-            toggleBtn.innerHTML = '☰';
-            toggleBtn.setAttribute('aria-label', 'فتح القائمة');
-            navOverlay.style.display = 'none';
+            navToggle.classList.remove('active');
+            navOverlay.classList.remove('active');
+            navToggle.setAttribute('aria-expanded', 'false');
+            navToggle.setAttribute('aria-label', 'فتح القائمة');
             document.body.style.overflow = '';
         }
 
         // Event listeners
-        toggleBtn.addEventListener('click', toggleNavMenu);
+        navToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleNavMenu();
+        });
+        
         navOverlay.addEventListener('click', closeNavMenu);
 
         // Close menu when clicking on nav links
-        const navLinks = navMenu.querySelectorAll('a');
+        const navLinks = navMenu.querySelectorAll('.nav-link, .dropdown-item');
         navLinks.forEach(link => {
             link.addEventListener('click', () => {
                 if (window.innerWidth <= 1024) {
@@ -162,6 +145,27 @@
                 }
             });
         });
+
+        // Handle user menu dropdown on mobile
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        if (userMenuBtn && userDropdown) {
+            userMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isExpanded = userMenuBtn.getAttribute('aria-expanded') === 'true';
+                userMenuBtn.setAttribute('aria-expanded', !isExpanded);
+                userDropdown.classList.toggle('active');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userMenuBtn.setAttribute('aria-expanded', 'false');
+                    userDropdown.classList.remove('active');
+                }
+            });
+        }
 
         // Close menu on escape key
         document.addEventListener('keydown', (e) => {
@@ -179,6 +183,20 @@
                     closeNavMenu();
                 }
             }, 250);
+        });
+
+        // Add scroll effect to navbar
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            if (currentScroll > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            
+            lastScroll = currentScroll;
         });
 
         console.log('✅ Navigation mobile menu initialized');

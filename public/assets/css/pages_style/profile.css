@@ -1805,3 +1805,22 @@ body {
         font-size: 1.5rem;
     }
 }
+
+
+/* Result Status Styles */
+.result-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.result-item .badge-success,
+.result-item .badge-danger {
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
