@@ -80,6 +80,16 @@
     
     <!-- Inline Small CSS for Performance -->
     <style>
+        .hero-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
         .waves {
             position: fixed;
             bottom: 0;
@@ -127,7 +137,9 @@
     </style>
 </head>
 <body>
-    <!-- Removed Three.js canvas for better performance -->
+    <!-- Three.js Background Canvas -->
+    <canvas id="hero-canvas" class="hero-canvas" aria-hidden="true"></canvas>
+    
     <div class="waves">
         <div class="wave"></div>
         <div class="wave"></div>
@@ -224,7 +236,60 @@
         window.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('backToTop');if(!b)return;var t=false;function u(){b.style.display=window.pageYOffset>300?'block':'none';t=false}window.addEventListener('scroll',function(){if(!t){requestAnimationFrame(u);t=true}},{passive:true});b.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'})})});
     </script>
 
-    <!-- Simplified animations - no Three.js for better performance -->
+    <!-- Three.js Background Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Three.js Scene for Hero Background
+        if (window.innerWidth > 768) {
+            const canvas = document.getElementById('hero-canvas');
+            if (canvas) {
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                camera.position.z = 5;
+
+                // Create particles
+                const particlesGeometry = new THREE.BufferGeometry();
+                const particlesCount = 300;
+                const posArray = new Float32Array(particlesCount * 3);
+
+                for (let i = 0; i < particlesCount * 3; i++) {
+                    posArray[i] = (Math.random() - 0.5) * 10;
+                }
+
+                particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+                const particlesMaterial = new THREE.PointsMaterial({ 
+                    size: 0.03, 
+                    color: 0x3b82f6, 
+                    opacity: 0.6, 
+                    transparent: true 
+                });
+                const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+                scene.add(particlesMesh);
+
+                // Animation
+                function animate() {
+                    requestAnimationFrame(animate);
+                    particlesMesh.rotation.y += 0.0005;
+                    particlesMesh.rotation.x += 0.0002;
+                    renderer.render(scene, camera);
+                }
+
+                animate();
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+        }
+    </script>
+
+    <!-- GSAP Animations -->
     <script>
         // Skip animations on mobile or slow connections
         if(window.innerWidth>768&&(!navigator.connection||!navigator.connection.saveData)){

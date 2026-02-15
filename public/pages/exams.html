@@ -14,6 +14,10 @@
     <link rel="stylesheet" href="../assets/css/components/navbar.css">
     <link rel="stylesheet" href="../assets/css/pages_style/dashboard.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
+    
+    <!-- Auth Guard - Protect this page -->
+    <script src="../assets/js/auth-guard.js"></script>
+    
     <style>
         body {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
@@ -924,18 +928,6 @@
                     // For now, show all exams since we don't have type filtering yet
                     displayExams(allExams, completedExamIdsGlobal);
                 }
-            });
-        });
-    </script>
-
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                const filter = btn.dataset.filter;
-                // Filter logic will be implemented when exams are loaded
-                console.log('Filter:', filter);
             });
         });
     </script>
