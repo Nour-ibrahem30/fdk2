@@ -1,4 +1,4 @@
-<footer class="footer" style="opacity: 0.6;">
+<footer class="footer" role="contentinfo">
     <div class="footer-container">
         <div class="footer-section footer-brand-section">
             <h2 class="footer-logo">🎓 منصة الفلسفة والمنطق</h2>
@@ -6,14 +6,174 @@
                 منصة تعليمية متطورة متخصصة في الفلسفة والمنطق للمرحلة الثانوية.
                 نهدف إلى تقديم أفضل تجربة تعلم تفاعلية تساعد الطلاب على فهم عميق للفلسفة والتفكير المنطقي.
             </p>
+            <div class="footer-social">
+                <a href="#" class="social-link" aria-label="فيسبوك" title="فيسبوك">
+                    <span>📘</span>
+                </a>
+                <a href="#" class="social-link" aria-label="تويتر" title="تويتر">
+                    <span>🐦</span>
+                </a>
+                <a href="#" class="social-link" aria-label="يوتيوب" title="يوتيوب">
+                    <span>📺</span>
+                </a>
+                <a href="#" class="social-link" aria-label="إنستجرام" title="إنستجرام">
+                    <span>📷</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer-section">
+            <h3>روابط سريعة</h3>
+            <ul class="footer-links">
+                <li><a href="{{HOME}}">الرئيسية</a></li>
+                <li><a href="{{BASE}}videos.html">الفيديوهات</a></li>
+                <li><a href="{{BASE}}exams.html">الامتحانات</a></li>
+                <li><a href="{{BASE}}materials.html">المواد</a></li>
+                <li><a href="{{BASE}}notes.html">الملاحظات</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h3>الدعم</h3>
+            <ul class="footer-links">
+                <li><a href="{{BASE}}help.html">مركز المساعدة</a></li>
+                <li><a href="{{BASE}}faq.html">الأسئلة الشائعة</a></li>
+                <li><a href="{{BASE}}contact.html">اتصل بنا</a></li>
+                <li><a href="{{BASE}}feedback.html">إرسال ملاحظات</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h3>قانوني</h3>
+            <ul class="footer-links">
+                <li><a href="{{BASE}}privacy.html">سياسة الخصوصية</a></li>
+                <li><a href="{{BASE}}terms.html">شروط الاستخدام</a></li>
+                <li><a href="{{BASE}}cookies.html">سياسة الكوكيز</a></li>
+            </ul>
         </div>
     </div>
     
     <div class="footer-bottom">
         <div class="footer-copyright">
-            <p>© 2026 <span class="highlight">منصة الفلسفة والمنطق</span>. جميع الحقوق محفوظة. تم التطوير من خلال <a href="https://nouribrahem.vercel.app/" target="_blank" rel="noopener noreferrer" class="highlight developer-link">Nour Ibrahem</a>.</p>
+            <p>© 2026 <span class="highlight">منصة الفلسفة والمنطق</span>. جميع الحقوق محفوظة.</p>
+            <p>تم التطوير بواسطة <a href="https://nouribrahem.vercel.app/" target="_blank" rel="noopener noreferrer" class="highlight developer-link">Nour Ibrahem</a></p>
+        </div>
+        <div class="footer-legal">
+            <a href="{{BASE}}privacy.html">الخصوصية</a>
+            <a href="{{BASE}}terms.html">الشروط</a>
+            <a href="{{BASE}}sitemap.html">خريطة الموقع</a>
         </div>
     </div>
 </footer>
 
-<button id="backToTop" type="button" class="back-to-top" title="العودة للأعلى" aria-label="العودة للأعلى" style="display:none;position:fixed;bottom:2rem;right:2rem;width:50px;height:50px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);border:none;border-radius:50%;color:white;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 20px rgba(59,130,246,0.4);z-index:999;transition:all 0.3s ease;">↑</button>
+<button id="backToTop" type="button" class="back-to-top" title="العودة للأعلى" aria-label="العودة للأعلى">
+    ↑
+</button>
+
+<style>
+.back-to-top {
+    display: none;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+    z-index: 999;
+    transition: all 0.3s ease;
+}
+
+.back-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.6);
+}
+
+.back-to-top.show {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.footer-social {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.social-link {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 50%;
+    color: #3b82f6;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+}
+
+.social-link:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6;
+    transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+    .footer-social {
+        justify-content: center;
+    }
+    
+    .back-to-top {
+        bottom: 1rem;
+        right: 1rem;
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+    }
+}
+</style>
+
+<script>
+// Back to top button
+(function() {
+    const backToTopBtn = document.getElementById('backToTop');
+    
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('show');
+                backToTopBtn.style.display = 'block';
+            } else {
+                backToTopBtn.classList.remove('show');
+                backToTopBtn.style.display = 'none';
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+})();
+</script>
