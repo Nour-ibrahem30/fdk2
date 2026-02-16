@@ -5,6 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مشاهدة الفيديو | منصة الفيلسوف التعليمية</title>
+    
+    <!-- Auth Guard - Protect this page -->
+    <script>
+        // Hide content immediately before page loads
+        (function() {
+            const isAuthenticated = localStorage.getItem('currentUserEmail') && localStorage.getItem('currentUser');
+            if (!isAuthenticated) {
+                document.write('<style>body{display:none!important;visibility:hidden!important;}</style>');
+                setTimeout(function() {
+                    window.location.replace('/public/pages/login.html');
+                }, 100);
+            }
+        })();
+    </script>
+    <script src="../assets/js/auth-guard.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 

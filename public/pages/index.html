@@ -18,6 +18,7 @@
     <link rel="canonical" href="https://philosopher-platform.com/">
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/components/navbar.css">
+    <link rel="stylesheet" href="../assets/css/components/buttons.css">
     <link rel="stylesheet" href="../assets/css/pages_style/home.css">
 </head>
 <body>
@@ -192,7 +193,7 @@
     <!-- Three.js Background Animation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Three.js Scene for Hero Background
+        // Three.js Scene for Hero Background - Enhanced with Brain and Shapes
         if (window.innerWidth > 768) {
             const canvas = document.getElementById('hero-canvas');
             if (canvas) {
@@ -203,6 +204,34 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
                 camera.position.z = 5;
+
+                // Create Brain (Icosahedron)
+                const brainGeometry = new THREE.IcosahedronGeometry(0.8, 1);
+                const brainMaterial = new THREE.MeshNormalMaterial({ 
+                    wireframe: true, 
+                    opacity: 0.4, 
+                    transparent: true 
+                });
+                const brain = new THREE.Mesh(brainGeometry, brainMaterial);
+                scene.add(brain);
+
+                // Create Logic Symbols (Octahedrons)
+                const symbolGeometry = new THREE.OctahedronGeometry(0.25);
+                const symbolMaterial = new THREE.MeshNormalMaterial({ 
+                    wireframe: false, 
+                    opacity: 0.5, 
+                    transparent: true 
+                });
+                
+                const symbols = [];
+                for (let i = 0; i < 6; i++) {
+                    const symbol = new THREE.Mesh(symbolGeometry, symbolMaterial);
+                    const angle = (i / 6) * Math.PI * 2;
+                    symbol.position.x = Math.cos(angle) * 2;
+                    symbol.position.y = Math.sin(angle) * 2;
+                    symbols.push(symbol);
+                    scene.add(symbol);
+                }
 
                 // Create particles
                 const particlesGeometry = new THREE.BufferGeometry();
@@ -224,10 +253,28 @@
                 scene.add(particlesMesh);
 
                 // Animation
+                let time = 0;
                 function animate() {
                     requestAnimationFrame(animate);
+                    time += 0.01;
+                    
+                    // Rotate brain
+                    brain.rotation.x += 0.005;
+                    brain.rotation.y += 0.005;
+                    
+                    // Animate symbols in orbit
+                    symbols.forEach((symbol, i) => {
+                        const angle = (i / 6) * Math.PI * 2 + time * 0.3;
+                        symbol.position.x = Math.cos(angle) * 2;
+                        symbol.position.y = Math.sin(angle) * 2;
+                        symbol.rotation.x += 0.02;
+                        symbol.rotation.y += 0.02;
+                    });
+                    
+                    // Rotate particles
                     particlesMesh.rotation.y += 0.0005;
                     particlesMesh.rotation.x += 0.0002;
+                    
                     renderer.render(scene, camera);
                 }
 

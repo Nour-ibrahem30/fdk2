@@ -13,18 +13,29 @@
         if (!currentUserEmail || !currentUser) {
             console.log('⚠️ User not authenticated, redirecting to login...');
             
+            // Hide page content
+            if (document.body) {
+                document.body.style.visibility = 'hidden';
+            }
+            
             // Show toast notification
             showToast('يجب تسجيل الدخول للوصول إلى هذه الصفحة', 'warning');
             
-            // Redirect to login after 1 second
+            // Redirect to login immediately
             setTimeout(() => {
-                window.location.href = '/public/pages/login.html';
-            }, 1000);
+                window.location.replace('/public/pages/login.html');
+            }, 800);
             
             return false;
         }
         
         console.log('✅ User authenticated:', currentUserEmail);
+        
+        // Make sure page is visible
+        if (document.body) {
+            document.body.style.visibility = 'visible';
+        }
+        
         return true;
     }
 

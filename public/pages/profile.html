@@ -6,6 +6,7 @@
     <title>الملف الشخصي - منصة محمد ناصر التعليمية</title>
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/components/navbar.css">
+    <link rel="stylesheet" href="../assets/css/components/buttons.css">
     <link rel="stylesheet" href="../assets/css/pages_style/profile.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +16,18 @@
     <meta name="keywords" content="ملف شخصي, طالب, تعلم, مهام, إنجازات">
     
     <!-- Auth Guard - Protect this page -->
+    <script>
+        // Hide content immediately before page loads
+        (function() {
+            const isAuthenticated = localStorage.getItem('currentUserEmail') && localStorage.getItem('currentUser');
+            if (!isAuthenticated) {
+                document.write('<style>body{display:none!important;visibility:hidden!important;}</style>');
+                setTimeout(function() {
+                    window.location.replace('/public/pages/login.html');
+                }, 100);
+            }
+        })();
+    </script>
     <script src="../assets/js/auth-guard.js"></script>
 </head>
 <body>
